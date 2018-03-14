@@ -1,0 +1,149 @@
+#+TITLE: 卒論修論の執筆の仕方
+#+AUTHOR:
+#+EMAIL:
+#+DATE:
+#+OPTIONS: H:3 num:2 toc:nil
+#+OPTIONS: ^:nil @:t \n:nil ::t |:t f:t TeX:t
+#+OPTIONS: skip:nil
+#+OPTIONS: author:t
+#+OPTIONS: email:nil
+#+OPTIONS: creator:nil
+#+OPTIONS: timestamp:nil
+#+OPTIONS: timestamps:nil
+#+OPTIONS: d:nil
+#+OPTIONS: tags:t
+#+TEXT:
+#+DESCRIPTION:
+#+KEYWORDS:
+#+LANGUAGE: ja
+#+STARTUP: odd
+#+LATEX_CLASS: jsarticle
+#+LATEX_CLASS_OPTIONS: [a4j]
+#+LATEX_HEADER: \usepackage{plain-article}
+# #+LATEX_HEADER: \renewcommand\maketitle{}
+# #+LATEX_HEADER: \pagestyle{empty}
+# #+LaTeX: \thispagestyle{empty}
+
+* 概要
+  本文書は，乃村研の学生が卒論修論を執筆する際の準備について記述している．
+  以下を前提としている．
+
+  1) 各人は，Github 上にホームディレクトリ用のプライベートリポジトリ(以下 home_repo)を持っており，
+     手元に clone して日々の作業をしている．[[https://github.com/nomlab/nompedia/wiki/About-rule-of-laboratory#user-content-%25E3%2583%259B%25E3%2583%25BC%25E3%2583%25A0%25E3%2583%2587%25E3%2582%25A3%25E3%2583%25AC%25E3%2582%25AF%25E3%2583%2588%25E3%2583%25AA%25E3%2581%25AB%25E3%2581%25A4%25E3%2581%2584%25E3%2581%25A6][(参考)]]
+     : 例: https://github.com/yoshinari-nomura/nom
+  2) LaTeX を使って論文を記述する．
+
+  この前提に従っていれば，home_repo 以下に b_thesis あるいは
+  m_thesis ディレクトリがある筈なので，そこで作業をすればよい．
+
+  b_thesis あるいは m_thesis の雛型は，https://github.com/nomlab/nompedia/tree/master/Templates/Home/ 以下にあるので，
+  git に慣れた者であれば，ここを一旦別所に clone し，必要に応じて自分の home_repo にコピーして利用すればよい．
+  以下，その手順である．
+
+* リポジトリの準備
+** テンプレートのコピー
+  以下，自身の home_repo が =~/home_repo= にあると仮定している．
+
+  #+BEGIN_SRC shell-script
+    # テンプレートを /tmp/home_repo にとりあえず clone してくる
+    git clone git@github.com:nomlab/nompedia.git /tmp/home_repo
+    # b_thesis (m_thesis) だけを ~/home_repo/ にコピー．
+    # 元々あるかもしれないので上書きに注意
+    cp -pr /tmp/home_repo/Templates/Home/b_thesis ~/home_repo/
+  #+END_SRC
+
+** TeX ファイルの名前変更
+   テンプレート中の =thesis.tex= を誰の論文か特定しやすいファイル名に変更する．
+   ファイル名の形式は， =thesis-[発表年度][B or M]-[発表者名].tex= とする．
+   例えば，2014年度 (年度と年を混同しないように) 修士 (Master) の =danjo-m= は，
+   =thesis-2014M-danjo-m.tex= とする．
+
+   #+BEGIN_SRC shell-script
+     cd ~/home_repo/b_thesis
+     mv thesis.tex thesis-[発表年度][B or M]-[発表者名].tex
+   #+END_SRC
+
+   また，TeX ファイルの名前に合わせて make のターゲットを変更する．
+   プロジェクト固有の設定は， =project.mk= ファイルに記述しておくと，
+   Makefile から include される．
+   =mybibdata.bib= は，参考文献用DBファイルである．
+
+   #+BEGIN_SRC makefile
+     #####################################################################
+     # Files in the project
+     #####################################################################
+
+     # if the main TeX file is ``myproject.tex'', set:
+     #   PROJECT = myproject
+     PROJECT = thesis
+     PROJECT_BIB = mybibdata.bib
+
+     # All figure files are extracted from the single PDF file: FIG_MASTER_FILE.
+     # FIG_PAGES indicates which pages are extracted and used in the main TeX file.
+     #
+     # For example:
+     #   FIG_MASTER_FILE = figs/fig.pdf
+     #   FIG_PAGES     = 1 2 3 4 5
+     # makes:
+     #   figs/fig1.pdf ... figs/fig5.pdf from figs/fig.pdf
+     #
+     FIG_MASTER_FILE = figs/fig.pdf
+     FIG_PAGES       = 1 2 3 4 5
+   #+END_SRC
+
+** TeX 組版 (コンパイル) の確認
+
+   =Makefile= のあるディレクトリで， =make= を実行すれば，
+   論文の pdf ファイルが生成される．
+
+** 不要なファイルの変更，削除
+
+   テンプレートを正しく利用できたら，
+   以下のファイルは，自身の論文に合う内容に変更するか削除し，
+   そのまま commit に入らないように気を付ける．
+
+   + README.org (このファイル)
+   + *.pdf
+   + figs/*
+
+* トラブルシューティング
+** TeXのバージョンによる図の挿入方法の違い
+   TeX のバージョンによって，図を挿入する作法が若干異なる．
+   比較的最近のTeX (texlive) を使って xbb 形式を用いていれば，
+   テンプレートの =Makefile= がそのまま利用できるが，
+   少し古い ptex を用いる場合は，bb 形式であるため，図の挿入に失敗する．
+
+   できれば，新しい texlive を使うことを推奨するが，texlive の更新が不可能な場合は，
+   Makefile 中の xbb を全て bb に置き換える．例えば，以下の通り．
+   他にも変更個所がいくつかあるので気を付ける．
+   #+BEGIN_SRC diff
+     @@ -80,7 +80,7 @@ FIG_PAGES       = 1 2 3 4 5
+
+      TEX_FILES      = ${PROJECT}.tex
+      FIG_PDF_FILES := $(foreach n, $(FIG_PAGES), $(call addpage,$(FIG_MASTER_FILE),$(n)))
+     -FIG_EBB_FILES := $(foreach n, $(FIG_PAGES), $(call addpage,$(FIG_MASTER_FILE),$(n),xbb))
+     +FIG_EBB_FILES := $(foreach n, $(FIG_PAGES), $(call addpage,$(FIG_MASTER_FILE),$(n),bb))
+
+      #####################################################################
+      # Common rules
+     @@ -98,7 +98,7 @@ ${FIG_PDF_FILES} : ${FIG_MASTER_FILE}
+                     -dLastPage=$(call pagenum,$*)   \
+                     -sOutputFile=$@ ${FIG_MASTER_FILE} 2>/dev/null
+
+     -${FIG_EBB_FILES} : %.xbb : %.pdf
+     +${FIG_EBB_FILES} : %.bb : %.pdf
+             @echo "Making $@ from $<"
+             @${GS} -sDEVICE=bbox -r100 $< 2> $@
+   #+END_SRC
+
+* 論文作成の諸注意
+  リポジトリ構成等の論文作成の諸注意については,
+  別途以下を参照のこと．(GitHub のログインが必要)．
+
+  1) [[https://github.com/nomlab/nompedia/wiki/About-presentation][研究会発表の準備手順と注意点]]
+  2) [[https://github.com/nomlab/nompedia/wiki/About-paper-submission#user-content-%E8%AB%96%E6%96%87%E5%9F%B7%E7%AD%86%E3%81%AE%E9%9A%9B%E3%81%AE%E6%B3%A8%E6%84%8F%E7%82%B9][論文執筆の際の注意点]]
+
+  リポジトリ作成の際に以下を注意すること．
+  + 不要なファイルはコミットしない．
+  + 他人が後から使えるように配慮する．(論文の cls ファイルや fig も入れておく)
+  + 独自の方法でコンパイルが必要な場合は，その旨を README に記載する．
