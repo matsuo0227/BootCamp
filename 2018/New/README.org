@@ -1,0 +1,193 @@
+#+TITLE: 新人研修課題(New)
+#+AUTHOR: Nomura Laboratory, Okayama University
+#+EMAIL:
+#+DATE:
+#+OPTIONS: H:3 num:2 toc:nil
+#+OPTIONS: ^:nil @:t \n:nil ::t |:t f:t TeX:t
+#+OPTIONS: skip:nil
+#+OPTIONS: author:t
+#+OPTIONS: email:nil
+#+OPTIONS: creator:nil
+#+OPTIONS: timestamp:nil
+#+OPTIONS: timestamps:nil
+#+OPTIONS: d:nil
+#+OPTIONS: tags:t
+#+TEXT:
+#+DESCRIPTION:
+#+KEYWORDS:
+#+LANGUAGE: ja
+#+STARTUP: odd
+#+LATEX_CLASS: jsarticle
+#+LATEX_CLASS_OPTIONS: [a4j]
+# #+LATEX_HEADER: \usepackage{plain-article}
+# #+LATEX_HEADER: \renewcommand\maketitle{}
+# #+LATEX_HEADER: \pagestyle{empty}
+# #+LaTeX: \thispagestyle{empty}
+
+* Debianインストール手順
+** (1) システム言語の設定
+*** Select a language
++ Language: Englishを選択
+** (2) 地域の設定
+*** Select your location
++ Country, territory or area: other -> Asia -> Japan を選択
+** (3) ロケールの設定
+*** Configure locales
++ Country to base default locale settings on: United States - en_US.UTF-8 を選択
+** (4) キーボードの設定
+*** Configure the Keyboard
++ Keymap to use: Japanese
+** (5) ネットワークの設定
+*** Configure the network
++ Hostname: sugi(ノード1用ならsugi1，ノード2用ならsugi2)
++ Domain name: なし
+** (6) ユーザとパスワードの設定
+*** Set up users and passwords
++ Root password: パスワード(いつもの)
++ Re-enter password to verify:
++ Full name for the new user: フルネーム(例: Keisuke Sugi)
++ Username for your account: アカウント名(例: sugi)
++ Choose a password for the new user:　パスワード(いつもの)
++ Re-enter password to verify:
+** (7) タイムゾーンの設定
+*** Configure the clock
++ Select yout time zone:
+** (8) パーティションの設定
+*** Partition disks
++ Manual を選択
+*** SCSI1 (0.0.0) (sda) - 320.1GB Hitachi HDS72103
++ Create new empty partition table on this deice? <Yes>
++ pri/log 320.1GB FREE SPACE
++ Create a new partition -> 196 MB -> Primary -> Beginning -> Mount point:
+-> /boot - static files of the boot loader -> Done setting up the partition
++ Create a new partition -> 315.9 GB(残りの領域から4GB(メモリの2倍)のサイズを差し引いた大きさ) -> Primary -> Beginning
+-> Mount point:-> / - the root file system -> Done setting up the partition
++ Create a new partition -> 4 GB -> Primary -> Beginning -> Use as:
+-> Use as: swap area -> Done setting up the partition
+
++ Finish patitioning and write changes to disk を選択
++ Write the changes to disks? <Yes>
+
+** (9) パッケージの設定
+*** Configure the package manager
++ Scan another CD or DVD? <No>
++ Use a network mirror? <Yes>
++ Debian archive mirror country: Japan
++ Debian archive mirror: ftp.riken.jp
++ HTTP proxy information (blank for none):なし
+** (10) 調査への協力の設定
+*** Configuring popularity-contest
++ Participate in the package usage survey? <No>
+** (11) インストールするソフトウェアの設定
+*** Software selection
++ Choose software to install:スペースキーを用いて「SSH server」以外のすべてのチェックを外す
+** (12) ブートローダの設定
+*** Install the GRUB boot loader on a hard disk (sdaのとき)
++ Install the GRUB boot loader to the master boot record? <Yes>
++ Device for boot loader installation: なし
+*** Install the GRUB boot loader on a hard disk (sdb，sdcのとき)
++ Install the GRUB boot loader to the master boot record? <No>
++ Device for boot loader installation: なし
+** (13) システムクロックの設定
+*** Finish the installation
++ Is the system clock set to UTC? <Yes>
+
+* Linux再構築の手順
+** 環境設定
+*** (1) sudo権限の付与
+     + ユーザにsudo権限を与える．以下のコマンドを実行する．
+       : $ su
+       : # visudo (エディタが起動するので，"root ALL=(ALL) ALL"の直後に"ogura-i ALL=(ALL) ALL"を追加する)
+*** (2) gitとgccのインストール
+     + gitとgccをインストールする．以下のコマンドを実行する．
+       : $ sudo apt-get update
+       : $ sudo apt-get install git
+       : $ sudo apt-get install gcc
+*** (3) カーネル再構築で使用するライブラリとコマンドのインストール
+     + カーネル再構築で使用するライブラリとコマンドをインストールする．以下のコマンドを実行する．
+       : $ sudo apt-get install libncurses5-dev (make menuconfigやデバイス分割で用いる)
+       : $ sudo apt-get install bc (カーネルの再構築で実行するコマンドで用いる)
+** Linuxカーネルの取得
+*** (1) Linuxのソースコードの取得
+     + Linuxのソースコードを取得する．LinuxのソースコードはGitで管理されている．Gitとはオープンソースの分散型バージョン管理システムである．下記のGitリポジトリからクローンし，Linuxのソースコードを取得する．
+       : git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+     + リポジトリとはディレクトリを保存する場所のことであり，クローンとはリポジトリの内容を任意のディレクトリに複製することである．本手順書では/home/ogura-i/git以下でソースコードを管理する．/home/ogura-iで以下のコマンドを実行する．
+       : $ mkdir git
+       : $ cd git
+       : $ git clone git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+     + 実行後，mkdirコマンドにより/home/ogura-i以下にgitディレクトリが作成される．そして，cdコマンドにより，gitディレクトリに移動する．git cloneコマンドにより，/home/ogura-i/git以下にlinux-stableディレクトリが作成される．linux-stable以下にLinuxのソースコードが格納されている．
+*** (2) ブランチの切り替え
+     + Linuxのソースコードのバージョンを切り替えるため，ブランチの作成と切り替えを行う．ブランチとは開発の履歴を管理するための分岐である．/home/ogura-i/git/linux-stableで以下のコマンドを実行する．
+       : $ git checkout -b 3.15 v3.15
+     + 実行後，v3.15というタグが示すコミットからブランチ3.15が作成され，ブランチ3.15に切り替わる．コミットとはある時点における開発の状態を記録したものである．タグとはコミットを識別するためにつける印である．
+** カーネルの再構築 
+    + 以下の手順でカーネルの再構築を行う．コマンドは/home/ogura-i/git/linux-stable以下で実行する．
+*** (1) .config ファイルの作成
+     + .configファイルを作成する．.configファイルとはカーネルの設定を記述したコンフィギュレーションファイルである．以下のコマンドを実行し，defconfig ファイルを基に，カーネルの設定を行う．defconfig ファイルにはデフォルトの設定が記述されている．
+       : $ make defconfig
+     + 実行後，/home/ogura-i/git/linux-stable以下に.configファイルが作成される．
+*** (2) カーネルのコンパイル
+     + Linuxカーネルをコンパイルする．以下のコマンドを実行する．
+       : $ make bzImage -j8
+     上記コマンドの「-j」オプションは，同時に実行できるジョブ数を指定する．ジョブ数を不用意に増やすとメモリ不足により，実行速度が低下する場合がある．ジョブ数はCPUのコア数*2が効果的である．コマンド実行後，/home/ogura-i/git/linux-stable/arch/x86/boot以下にbzImageという名前の圧縮カーネルイメージが作成される．カーネルイメージとは実行可能形式のカーネルを含むファイルである．同時に，/home/ogura-i/git/linux-stable以下にすべてのカーネルシンボルのアドレスを記述したSystem.mapが作成される．火0ネルシンボルとはカーネルのプログラムが格納されたメモリアドレスと対応付けられた文字列のことである．
+*** (3) カーネルのインストール
+     + コンパイルしたカーネルをインストールする．以下のコマンドを実行する．
+       : $ sudo cp /home/ogura-i/git/linux-stable/arch/x86/boot/bzImage /boot/vmlinuz-3.15.0-linux
+       : $ sudo cp /home/ogura-i/git/linux-stable/System.map /boot/System.map-3.15.0-linux
+     + 実行後，bzImageとSystem.mapがboot以下にそれぞれvmlinuz-3.15.0-linuxとSystem.map-3.15.0-linuxという名前でコピーされる．
+*** (4) カーネルモジュールのコンパイル
+     + カーネルモジュールをコンパイルする．カーネルモジュールとは機能を拡張するためのバイナリファイルである．以下のコマンドを実行する．
+       : $ make modules
+*** (5) カーネルモジュールのインストール
+     + コンパイルしたカーネルモジュールをインストールする．以下のコマンドを実行する．
+       : $ sudo make modules_install
+     + 実効結果の最後の行は以下のように表示される．これはカーネルモジュールをインストールしたディレクトリ名を表している．
+       : DEPMOD 3.15.
+     + 上記の例では，/lib/modules/3.15.0 ディレクトリにカーネルモジュールがインストールされている．このディレクトリ名は手順(6) で必要となるため，控えておく．
+*** (6) 初期RAMディスクの作成
+     + 初期RAMディスクを作成する．初期RAMディスクとは初期ルートファイルシステムのことである．これは実際のルートファイルシステムが使用できるようになる前にマウントされる．以下のコマンドを実行する．
+       : $ sudo update-initramfs -c -k 3.15.0
+     + 手順(5) で控えておいたディレクトリ名をコマンドの引数として与える．実行後，/boot 以下に初期RAM ディスクinitrd.img-3.15.0 が作成される．
+*** (7) ブートローダの設定
+     + システムコールを実装したカーネルをブートローダから起動可能にするために，ブートローダを設定する．ブートローダの設定ファイルは/boot/grub/grub.cfg である．エントリを追加するためにはこのファイルを編集する必要がある．Debian7.10 で使用されているブートローダはGRUB2 である．GRUB2 でカーネルのエントリを追加する際，設定ファイルを直接編集しない．/etc/grub.d 以下にエントリ追加用のスクリプトを作成し，そのスクリプトを実行することでエントリを追加する．ブートローダを設定する手順を以下に示す．
+**** (A) エントリ追加用のスクリプトの作成
+      + カーネルのエントリを追加するため，エントリ追加用のスクリプトを作成する．本手順書では，既存のファイル名に倣い作成するスクリプトのファイル名は11 linux-3.15.0 とする．スクリプトの記述例を以下に示す．
+        : 1 #!/bin/sh -e
+        : 2 echo "Adding my custom Linux to GRUB2"
+        : 3 cat << EOF
+        : 4 menuentry "My custom Linux" {
+        : 5 set root=(hd0,1)
+        : 6 linux /vmlinuz-3.15.0-linux ro root=/dev/sda2 quiet
+        : 7 initrd /initrd.img-3.15.0
+        : 8 }
+        : 9 EOF
+      + スクリプトに記述された各項目について以下に示す．
+***** (a) menuentry < 表示名>
+       + < 表示名>: カーネル選択画面に表示される名前
+***** (b) set root=(<HDD 番号>,< パーティション番号>)
+       + <HDD 番号>: カーネルが保存されているHDD の番号
+       + < パーティション番号>: HDD の/boot が割り当てられたパーティション番号
+***** (c) linux < カーネルイメージのファイル名>
+       + < カーネルイメージのファイル名>: 起動するカーネルのカーネルイメージ
+***** (d) ro <root デバイス>
+       + <root デバイス>: 起動時に読み込み専用でマウントするデバイス．
+***** (e) root=< ルートファイルシステム> < その他のブートオプション>
+       + < ルートファイルシステム>: /root を割り当てたパーティション
+       + < その他のブートオプション>: quiet はカーネルの起動時に出力するメッセージを省略する．
+***** (f) initrd < 初期RAM ディスク名>
+       + < 初期RAM ディスク名>: 起動時にマウントする初期RAM ディスク名
+**** (B) 実行権限の付与
+      + /etc/grub.d で以下のコマンドを実行し，作成したスクリプトに実行権限を付与する．
+        : $ sudo chmod +x 11_linux-3.15.0
+**** (C) エントリ追加用のスクリプトの実行
+      + 以下のコマンドを実行し，作成したスクリプトを実行する．
+        : $ sudo update-grub
+      + 実行後，/boot/grub/grub.cfg にシステムコールを実装したカーネルのエントリが追加される．
+*** (8) 再起動
+     + 任意のディレクトリで以下のコマンドを実行し，計算機を再起動させる．
+       : $ sudo reboot
+     + GRUB2 のカーネル選択画面にエントリが追加されている．手順(7) のスクリプトを用いた場合，カーネル選択画面でMy custom Linux を選択し，起動する．
+
+
+
+
