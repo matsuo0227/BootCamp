@@ -1,5 +1,5 @@
-#+TITLE: è³‡æ–™ã®åŸ·ç­†ã®ä»•æ–¹
-#+AUTHOR:
+#+TITLE: VlŒ¤C‰Û‘è(New)
+#+AUTHOR: Nomura Laboratory, Okayama University
 #+EMAIL:
 #+DATE:
 #+OPTIONS: H:3 num:2 toc:nil
@@ -19,116 +19,175 @@
 #+STARTUP: odd
 #+LATEX_CLASS: jsarticle
 #+LATEX_CLASS_OPTIONS: [a4j]
-#+LATEX_HEADER: \usepackage{plain-article}
+# #+LATEX_HEADER: \usepackage{plain-article}
 # #+LATEX_HEADER: \renewcommand\maketitle{}
 # #+LATEX_HEADER: \pagestyle{empty}
 # #+LaTeX: \thispagestyle{empty}
 
-* æ¦‚è¦
-  æœ¬æ–‡æ›¸ã¯ï¼Œä¹ƒæ‘ç ”ã®å­¦ç”ŸãŒè³‡æ–™ã‚’åŸ·ç­†ã™ã‚‹éš›ã®æº–å‚™ã«ã¤ã„ã¦è¨˜è¿°ã—ã¦ã„ã‚‹ï¼
-  æœ¬æ–‡æ›¸ã§ã¯ï¼ŒLaTeX ã‚’ä½¿ã£ã¦è³‡æ–™ã‚’è¨˜è¿°ã™ã‚‹ã“ã¨ã‚’å‰æã¨ã—ã¦ã„ã‚‹ï¼
+* DebianƒCƒ“ƒXƒg[ƒ‹è‡
+** (1) ƒVƒXƒeƒ€Œ¾Œê‚Ìİ’è
+*** Select a language
++ Language: English‚ğ‘I‘ğ
+** (2) ’nˆæ‚Ìİ’è
+*** Select your location
++ Country, territory or area: other -> Asia -> Japan ‚ğ‘I‘ğ
+** (3) ƒƒP[ƒ‹‚Ìİ’è
+*** Configure locales
++ Country to base default locale settings on: United States - en_US.UTF-8 ‚ğ‘I‘ğ
+** (4) ƒL[ƒ{[ƒh‚Ìİ’è
+*** Configure the Keyboard
++ Keymap to use: Japanese
+** (5) ƒlƒbƒgƒ[ƒN‚Ìİ’è
+*** Configure the network
++ Hostname: sugi(ƒm[ƒh1—p‚È‚çsugi1Cƒm[ƒh2—p‚È‚çsugi2)
++ Domain name: ‚È‚µ
+** (6) ƒ†[ƒU‚ÆƒpƒXƒ[ƒh‚Ìİ’è
+*** Set up users and passwords
++ Root password: ƒpƒXƒ[ƒh(‚¢‚Â‚à‚Ì)
++ Re-enter password to verify:
++ Full name for the new user: ƒtƒ‹ƒl[ƒ€(—á: Keisuke Sugi)
++ Username for your account: ƒAƒJƒEƒ“ƒg–¼(—á: sugi)
++ Choose a password for the new user:@ƒpƒXƒ[ƒh(‚¢‚Â‚à‚Ì)
++ Re-enter password to verify:
+** (7) ƒ^ƒCƒ€ƒ][ƒ“‚Ìİ’è
+*** Configure the clock
++ Select yout time zone:
+** (8) ƒp[ƒeƒBƒVƒ‡ƒ“‚Ìİ’è
+*** Partition disks
++ Manual ‚ğ‘I‘ğ
+*** SCSI1 (0.0.0) (sda) - 320.1GB Hitachi HDS72103
++ Create new empty partition table on this deice? <Yes>
++ pri/log 320.1GB FREE SPACE
++ Create a new partition -> 196 MB -> Primary -> Beginning -> Mount point:
+-> /boot - static files of the boot loader -> Done setting up the partition
++ Create a new partition -> 315.9 GB(c‚è‚Ì—Ìˆæ‚©‚ç4GB(ƒƒ‚ƒŠ‚Ì2”{)‚ÌƒTƒCƒY‚ğ·‚µˆø‚¢‚½‘å‚«‚³) -> Primary -> Beginning
+-> Mount point:-> / - the root file system -> Done setting up the partition
++ Create a new partition -> 4 GB -> Primary -> Beginning -> Use as:
+-> Use as: swap area -> Done setting up the partition
 
-* ãƒªãƒã‚¸ãƒˆãƒªã®æº–å‚™
-** ãƒ†ãƒ³ãƒ—ãƒ¬ãƒ¼ãƒˆã®ã‚³ãƒ”ãƒ¼
-   ä»¥ä¸‹ã§ã¯ï¼Œ =~/Projects= ä¸‹ã« =BootCamp= ãƒªãƒã‚¸ãƒˆãƒªã‚’é…ç½®ã—ã¦ã„ã‚‹ï¼
++ Finish patitioning and write changes to disk ‚ğ‘I‘ğ
++ Write the changes to disks? <Yes>
 
-  #+BEGIN_SRC shell-script
-    $ git clone git@github.com:nomlab/BootCamp.git ~/Projects/
-  #+END_SRC
+** (9) ƒpƒbƒP[ƒW‚Ìİ’è
+*** Configure the package manager
++ Scan another CD or DVD? <No>
++ Use a network mirror? <Yes>
++ Debian archive mirror country: Japan
++ Debian archive mirror: ftp.riken.jp
++ HTTP proxy information (blank for none):‚È‚µ
+** (10) ’²¸‚Ö‚Ì‹¦—Í‚Ìİ’è
+*** Configuring popularity-contest
++ Participate in the package usage survey? <No>
+** (11) ƒCƒ“ƒXƒg[ƒ‹‚·‚éƒ\ƒtƒgƒEƒFƒA‚Ìİ’è
+*** Software selection
++ Choose software to install:ƒXƒy[ƒXƒL[‚ğ—p‚¢‚ÄuSSH servervˆÈŠO‚Ì‚·‚×‚Ä‚Ìƒ`ƒFƒbƒN‚ğŠO‚·
+** (12) ƒu[ƒgƒ[ƒ_‚Ìİ’è
+*** Install the GRUB boot loader on a hard disk (sda‚Ì‚Æ‚«)
++ Install the GRUB boot loader to the master boot record? <Yes>
++ Device for boot loader installation: ‚È‚µ
+*** Install the GRUB boot loader on a hard disk (sdbCsdc‚Ì‚Æ‚«)
++ Install the GRUB boot loader to the master boot record? <No>
++ Device for boot loader installation: ‚È‚µ
+** (13) ƒVƒXƒeƒ€ƒNƒƒbƒN‚Ìİ’è
+*** Finish the installation
++ Is the system clock set to UTC? <Yes>
 
-** TeX ãƒ•ã‚¡ã‚¤ãƒ«ã®åå‰å¤‰æ›´
-   ãƒ†ãƒ³ãƒ—ãƒ¬ãƒ¼ãƒˆä¸­ã® =myproject.tex= ã‚’æ‰±ã„ã‚„ã™ã„ãƒ•ã‚¡ã‚¤ãƒ«åã«å¤‰æ›´ã™ã‚‹ï¼
-   ä¾‹ãˆã°ï¼Œä»•æ§˜æ›¸ã§ã‚ã‚Œã°ï¼Œ =specification.tex= ã¨ã™ã‚‹ï¼
+* LinuxÄ\’z‚Ìè‡
+** ŠÂ‹«İ’è
+*** (1) sudoŒ ŒÀ‚Ì•t—^
+     + ƒ†[ƒU‚ÉsudoŒ ŒÀ‚ğ—^‚¦‚éDˆÈ‰º‚ÌƒRƒ}ƒ“ƒh‚ğÀs‚·‚éD
+       : $ su
+       : # visudo (ƒGƒfƒBƒ^‚ª‹N“®‚·‚é‚Ì‚ÅC"root ALL=(ALL) ALL"‚Ì’¼Œã‚É"ogura-i ALL=(ALL) ALL"‚ğ’Ç‰Á‚·‚é)
+*** (2) git‚Ægcc‚ÌƒCƒ“ƒXƒg[ƒ‹
+     + git‚Ægcc‚ğƒCƒ“ƒXƒg[ƒ‹‚·‚éDˆÈ‰º‚ÌƒRƒ}ƒ“ƒh‚ğÀs‚·‚éD
+       : $ sudo apt-get update
+       : $ sudo apt-get install git
+       : $ sudo apt-get install gcc
+*** (3) ƒJ[ƒlƒ‹Ä\’z‚Åg—p‚·‚éƒ‰ƒCƒuƒ‰ƒŠ‚ÆƒRƒ}ƒ“ƒh‚ÌƒCƒ“ƒXƒg[ƒ‹
+     + ƒJ[ƒlƒ‹Ä\’z‚Åg—p‚·‚éƒ‰ƒCƒuƒ‰ƒŠ‚ÆƒRƒ}ƒ“ƒh‚ğƒCƒ“ƒXƒg[ƒ‹‚·‚éDˆÈ‰º‚ÌƒRƒ}ƒ“ƒh‚ğÀs‚·‚éD
+       : $ sudo apt-get install libncurses5-dev (make menuconfig‚âƒfƒoƒCƒX•ªŠ„‚Å—p‚¢‚é)
+       : $ sudo apt-get install bc (ƒJ[ƒlƒ‹‚ÌÄ\’z‚ÅÀs‚·‚éƒRƒ}ƒ“ƒh‚Å—p‚¢‚é)
+** LinuxƒJ[ƒlƒ‹‚Ìæ“¾
+*** (1) Linux‚Ìƒ\[ƒXƒR[ƒh‚Ìæ“¾
+     + Linux‚Ìƒ\[ƒXƒR[ƒh‚ğæ“¾‚·‚éDLinux‚Ìƒ\[ƒXƒR[ƒh‚ÍGit‚ÅŠÇ—‚³‚ê‚Ä‚¢‚éDGit‚Æ‚ÍƒI[ƒvƒ“ƒ\[ƒX‚Ì•ªUŒ^ƒo[ƒWƒ‡ƒ“ŠÇ—ƒVƒXƒeƒ€‚Å‚ ‚éD‰º‹L‚ÌGitƒŠƒ|ƒWƒgƒŠ‚©‚çƒNƒ[ƒ“‚µCLinux‚Ìƒ\[ƒXƒR[ƒh‚ğæ“¾‚·‚éD
+       : git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+     + ƒŠƒ|ƒWƒgƒŠ‚Æ‚ÍƒfƒBƒŒƒNƒgƒŠ‚ğ•Û‘¶‚·‚éêŠ‚Ì‚±‚Æ‚Å‚ ‚èCƒNƒ[ƒ“‚Æ‚ÍƒŠƒ|ƒWƒgƒŠ‚Ì“à—e‚ğ”CˆÓ‚ÌƒfƒBƒŒƒNƒgƒŠ‚É•¡»‚·‚é‚±‚Æ‚Å‚ ‚éD–{è‡‘‚Å‚Í/home/ogura-i/gitˆÈ‰º‚Åƒ\[ƒXƒR[ƒh‚ğŠÇ—‚·‚éD/home/ogura-i‚ÅˆÈ‰º‚ÌƒRƒ}ƒ“ƒh‚ğÀs‚·‚éD
+       : $ mkdir git
+       : $ cd git
+       : $ git clone git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+     + ÀsŒãCmkdirƒRƒ}ƒ“ƒh‚É‚æ‚è/home/ogura-iˆÈ‰º‚ÉgitƒfƒBƒŒƒNƒgƒŠ‚ªì¬‚³‚ê‚éD‚»‚µ‚ÄCcdƒRƒ}ƒ“ƒh‚É‚æ‚èCgitƒfƒBƒŒƒNƒgƒŠ‚ÉˆÚ“®‚·‚éDgit cloneƒRƒ}ƒ“ƒh‚É‚æ‚èC/home/ogura-i/gitˆÈ‰º‚Élinux-stableƒfƒBƒŒƒNƒgƒŠ‚ªì¬‚³‚ê‚éDlinux-stableˆÈ‰º‚ÉLinux‚Ìƒ\[ƒXƒR[ƒh‚ªŠi”[‚³‚ê‚Ä‚¢‚éD
+*** (2) ƒuƒ‰ƒ“ƒ`‚ÌØ‚è‘Ö‚¦
+     + Linux‚Ìƒ\[ƒXƒR[ƒh‚Ìƒo[ƒWƒ‡ƒ“‚ğØ‚è‘Ö‚¦‚é‚½‚ßCƒuƒ‰ƒ“ƒ`‚Ìì¬‚ÆØ‚è‘Ö‚¦‚ğs‚¤Dƒuƒ‰ƒ“ƒ`‚Æ‚ÍŠJ”­‚Ì—š—ğ‚ğŠÇ—‚·‚é‚½‚ß‚Ì•ªŠò‚Å‚ ‚éD/home/ogura-i/git/linux-stable‚ÅˆÈ‰º‚ÌƒRƒ}ƒ“ƒh‚ğÀs‚·‚éD
+       : $ git checkout -b 3.15 v3.15
+     + ÀsŒãCv3.15‚Æ‚¢‚¤ƒ^ƒO‚ª¦‚·ƒRƒ~ƒbƒg‚©‚çƒuƒ‰ƒ“ƒ`3.15‚ªì¬‚³‚êCƒuƒ‰ƒ“ƒ`3.15‚ÉØ‚è‘Ö‚í‚éDƒRƒ~ƒbƒg‚Æ‚Í‚ ‚é“_‚É‚¨‚¯‚éŠJ”­‚Ìó‘Ô‚ğ‹L˜^‚µ‚½‚à‚Ì‚Å‚ ‚éDƒ^ƒO‚Æ‚ÍƒRƒ~ƒbƒg‚ğ¯•Ê‚·‚é‚½‚ß‚É‚Â‚¯‚éˆó‚Å‚ ‚éD
+** ƒJ[ƒlƒ‹‚ÌÄ\’z 
+    + ˆÈ‰º‚Ìè‡‚ÅƒJ[ƒlƒ‹‚ÌÄ\’z‚ğs‚¤DƒRƒ}ƒ“ƒh‚Í/home/ogura-i/git/linux-stableˆÈ‰º‚ÅÀs‚·‚éD
+*** (1) .config ƒtƒ@ƒCƒ‹‚Ìì¬
+     + .configƒtƒ@ƒCƒ‹‚ğì¬‚·‚éD.configƒtƒ@ƒCƒ‹‚Æ‚ÍƒJ[ƒlƒ‹‚Ìİ’è‚ğ‹Lq‚µ‚½ƒRƒ“ƒtƒBƒMƒ…ƒŒ[ƒVƒ‡ƒ“ƒtƒ@ƒCƒ‹‚Å‚ ‚éDˆÈ‰º‚ÌƒRƒ}ƒ“ƒh‚ğÀs‚µCdefconfig ƒtƒ@ƒCƒ‹‚ğŠî‚ÉCƒJ[ƒlƒ‹‚Ìİ’è‚ğs‚¤Ddefconfig ƒtƒ@ƒCƒ‹‚É‚ÍƒfƒtƒHƒ‹ƒg‚Ìİ’è‚ª‹Lq‚³‚ê‚Ä‚¢‚éD
+       : $ make defconfig
+     + ÀsŒãC/home/ogura-i/git/linux-stableˆÈ‰º‚É.configƒtƒ@ƒCƒ‹‚ªì¬‚³‚ê‚éD
+*** (2) ƒJ[ƒlƒ‹‚ÌƒRƒ“ƒpƒCƒ‹
+     + LinuxƒJ[ƒlƒ‹‚ğƒRƒ“ƒpƒCƒ‹‚·‚éDˆÈ‰º‚ÌƒRƒ}ƒ“ƒh‚ğÀs‚·‚éD
+       : $ make bzImage -j8
+     ã‹LƒRƒ}ƒ“ƒh‚Ìu-jvƒIƒvƒVƒ‡ƒ“‚ÍC“¯‚ÉÀs‚Å‚«‚éƒWƒ‡ƒu”‚ğw’è‚·‚éDƒWƒ‡ƒu”‚ğ•s—pˆÓ‚É‘‚â‚·‚Æƒƒ‚ƒŠ•s‘«‚É‚æ‚èCÀs‘¬“x‚ª’á‰º‚·‚éê‡‚ª‚ ‚éDƒWƒ‡ƒu”‚ÍCPU‚ÌƒRƒA”*2‚ªŒø‰Ê“I‚Å‚ ‚éDƒRƒ}ƒ“ƒhÀsŒãC/home/ogura-i/git/linux-stable/arch/x86/bootˆÈ‰º‚ÉbzImage‚Æ‚¢‚¤–¼‘O‚Ìˆ³kƒJ[ƒlƒ‹ƒCƒ[ƒW‚ªì¬‚³‚ê‚éDƒJ[ƒlƒ‹ƒCƒ[ƒW‚Æ‚ÍÀs‰Â”\Œ`®‚ÌƒJ[ƒlƒ‹‚ğŠÜ‚Şƒtƒ@ƒCƒ‹‚Å‚ ‚éD“¯‚ÉC/home/ogura-i/git/linux-stableˆÈ‰º‚É‚·‚×‚Ä‚ÌƒJ[ƒlƒ‹ƒVƒ“ƒ{ƒ‹‚ÌƒAƒhƒŒƒX‚ğ‹Lq‚µ‚½System.map‚ªì¬‚³‚ê‚éD‰Î0ƒlƒ‹ƒVƒ“ƒ{ƒ‹‚Æ‚ÍƒJ[ƒlƒ‹‚ÌƒvƒƒOƒ‰ƒ€‚ªŠi”[‚³‚ê‚½ƒƒ‚ƒŠƒAƒhƒŒƒX‚Æ‘Î‰•t‚¯‚ç‚ê‚½•¶š—ñ‚Ì‚±‚Æ‚Å‚ ‚éD
+*** (3) ƒJ[ƒlƒ‹‚ÌƒCƒ“ƒXƒg[ƒ‹
+     + ƒRƒ“ƒpƒCƒ‹‚µ‚½ƒJ[ƒlƒ‹‚ğƒCƒ“ƒXƒg[ƒ‹‚·‚éDˆÈ‰º‚ÌƒRƒ}ƒ“ƒh‚ğÀs‚·‚éD
+       : $ sudo cp /home/ogura-i/git/linux-stable/arch/x86/boot/bzImage /boot/vmlinuz-3.15.0-linux
+       : $ sudo cp /home/ogura-i/git/linux-stable/System.map /boot/System.map-3.15.0-linux
+     + ÀsŒãCbzImage‚ÆSystem.map‚ªbootˆÈ‰º‚É‚»‚ê‚¼‚êvmlinuz-3.15.0-linux‚ÆSystem.map-3.15.0-linux‚Æ‚¢‚¤–¼‘O‚ÅƒRƒs[‚³‚ê‚éD
+*** (4) ƒJ[ƒlƒ‹ƒ‚ƒWƒ…[ƒ‹‚ÌƒRƒ“ƒpƒCƒ‹
+     + ƒJ[ƒlƒ‹ƒ‚ƒWƒ…[ƒ‹‚ğƒRƒ“ƒpƒCƒ‹‚·‚éDƒJ[ƒlƒ‹ƒ‚ƒWƒ…[ƒ‹‚Æ‚Í‹@”\‚ğŠg’£‚·‚é‚½‚ß‚ÌƒoƒCƒiƒŠƒtƒ@ƒCƒ‹‚Å‚ ‚éDˆÈ‰º‚ÌƒRƒ}ƒ“ƒh‚ğÀs‚·‚éD
+       : $ make modules
+*** (5) ƒJ[ƒlƒ‹ƒ‚ƒWƒ…[ƒ‹‚ÌƒCƒ“ƒXƒg[ƒ‹
+     + ƒRƒ“ƒpƒCƒ‹‚µ‚½ƒJ[ƒlƒ‹ƒ‚ƒWƒ…[ƒ‹‚ğƒCƒ“ƒXƒg[ƒ‹‚·‚éDˆÈ‰º‚ÌƒRƒ}ƒ“ƒh‚ğÀs‚·‚éD
+       : $ sudo make modules_install
+     + ÀŒøŒ‹‰Ê‚ÌÅŒã‚Ìs‚ÍˆÈ‰º‚Ì‚æ‚¤‚É•\¦‚³‚ê‚éD‚±‚ê‚ÍƒJ[ƒlƒ‹ƒ‚ƒWƒ…[ƒ‹‚ğƒCƒ“ƒXƒg[ƒ‹‚µ‚½ƒfƒBƒŒƒNƒgƒŠ–¼‚ğ•\‚µ‚Ä‚¢‚éD
+       : DEPMOD 3.15.
+     + ã‹L‚Ì—á‚Å‚ÍC/lib/modules/3.15.0 ƒfƒBƒŒƒNƒgƒŠ‚ÉƒJ[ƒlƒ‹ƒ‚ƒWƒ…[ƒ‹‚ªƒCƒ“ƒXƒg[ƒ‹‚³‚ê‚Ä‚¢‚éD‚±‚ÌƒfƒBƒŒƒNƒgƒŠ–¼‚Íè‡(6) ‚Å•K—v‚Æ‚È‚é‚½‚ßCT‚¦‚Ä‚¨‚­D
+*** (6) ‰ŠúRAMƒfƒBƒXƒN‚Ìì¬
+     + ‰ŠúRAMƒfƒBƒXƒN‚ğì¬‚·‚éD‰ŠúRAMƒfƒBƒXƒN‚Æ‚Í‰Šúƒ‹[ƒgƒtƒ@ƒCƒ‹ƒVƒXƒeƒ€‚Ì‚±‚Æ‚Å‚ ‚éD‚±‚ê‚ÍÀÛ‚Ìƒ‹[ƒgƒtƒ@ƒCƒ‹ƒVƒXƒeƒ€‚ªg—p‚Å‚«‚é‚æ‚¤‚É‚È‚é‘O‚Éƒ}ƒEƒ“ƒg‚³‚ê‚éDˆÈ‰º‚ÌƒRƒ}ƒ“ƒh‚ğÀs‚·‚éD
+       : $ sudo update-initramfs -c -k 3.15.0
+     + è‡(5) ‚ÅT‚¦‚Ä‚¨‚¢‚½ƒfƒBƒŒƒNƒgƒŠ–¼‚ğƒRƒ}ƒ“ƒh‚Ìˆø”‚Æ‚µ‚Ä—^‚¦‚éDÀsŒãC/boot ˆÈ‰º‚É‰ŠúRAM ƒfƒBƒXƒNinitrd.img-3.15.0 ‚ªì¬‚³‚ê‚éD
+*** (7) ƒu[ƒgƒ[ƒ_‚Ìİ’è
+     + ƒVƒXƒeƒ€ƒR[ƒ‹‚ğÀ‘•‚µ‚½ƒJ[ƒlƒ‹‚ğƒu[ƒgƒ[ƒ_‚©‚ç‹N“®‰Â”\‚É‚·‚é‚½‚ß‚ÉCƒu[ƒgƒ[ƒ_‚ğİ’è‚·‚éDƒu[ƒgƒ[ƒ_‚Ìİ’èƒtƒ@ƒCƒ‹‚Í/boot/grub/grub.cfg ‚Å‚ ‚éDƒGƒ“ƒgƒŠ‚ğ’Ç‰Á‚·‚é‚½‚ß‚É‚Í‚±‚Ìƒtƒ@ƒCƒ‹‚ğ•ÒW‚·‚é•K—v‚ª‚ ‚éDDebian7.10 ‚Åg—p‚³‚ê‚Ä‚¢‚éƒu[ƒgƒ[ƒ_‚ÍGRUB2 ‚Å‚ ‚éDGRUB2 ‚ÅƒJ[ƒlƒ‹‚ÌƒGƒ“ƒgƒŠ‚ğ’Ç‰Á‚·‚éÛCİ’èƒtƒ@ƒCƒ‹‚ğ’¼Ú•ÒW‚µ‚È‚¢D/etc/grub.d ˆÈ‰º‚ÉƒGƒ“ƒgƒŠ’Ç‰Á—p‚ÌƒXƒNƒŠƒvƒg‚ğì¬‚µC‚»‚ÌƒXƒNƒŠƒvƒg‚ğÀs‚·‚é‚±‚Æ‚ÅƒGƒ“ƒgƒŠ‚ğ’Ç‰Á‚·‚éDƒu[ƒgƒ[ƒ_‚ğİ’è‚·‚éè‡‚ğˆÈ‰º‚É¦‚·D
+**** (A) ƒGƒ“ƒgƒŠ’Ç‰Á—p‚ÌƒXƒNƒŠƒvƒg‚Ìì¬
+      + ƒJ[ƒlƒ‹‚ÌƒGƒ“ƒgƒŠ‚ğ’Ç‰Á‚·‚é‚½‚ßCƒGƒ“ƒgƒŠ’Ç‰Á—p‚ÌƒXƒNƒŠƒvƒg‚ğì¬‚·‚éD–{è‡‘‚Å‚ÍCŠù‘¶‚Ìƒtƒ@ƒCƒ‹–¼‚É•í‚¢ì¬‚·‚éƒXƒNƒŠƒvƒg‚Ìƒtƒ@ƒCƒ‹–¼‚Í11 linux-3.15.0 ‚Æ‚·‚éDƒXƒNƒŠƒvƒg‚Ì‹Lq—á‚ğˆÈ‰º‚É¦‚·D
+        : 1 #!/bin/sh -e
+        : 2 echo "Adding my custom Linux to GRUB2"
+        : 3 cat << EOF
+        : 4 menuentry "My custom Linux" {
+        : 5 set root=(hd0,1)
+        : 6 linux /vmlinuz-3.15.0-linux ro root=/dev/sda2 quiet
+        : 7 initrd /initrd.img-3.15.0
+        : 8 }
+        : 9 EOF
+      + ƒXƒNƒŠƒvƒg‚É‹Lq‚³‚ê‚½Še€–Ú‚É‚Â‚¢‚ÄˆÈ‰º‚É¦‚·D
+***** (a) menuentry < •\¦–¼>
+       + < •\¦–¼>: ƒJ[ƒlƒ‹‘I‘ğ‰æ–Ê‚É•\¦‚³‚ê‚é–¼‘O
+***** (b) set root=(<HDD ”Ô†>,< ƒp[ƒeƒBƒVƒ‡ƒ“”Ô†>)
+       + <HDD ”Ô†>: ƒJ[ƒlƒ‹‚ª•Û‘¶‚³‚ê‚Ä‚¢‚éHDD ‚Ì”Ô†
+       + < ƒp[ƒeƒBƒVƒ‡ƒ“”Ô†>: HDD ‚Ì/boot ‚ªŠ„‚è“–‚Ä‚ç‚ê‚½ƒp[ƒeƒBƒVƒ‡ƒ“”Ô†
+***** (c) linux < ƒJ[ƒlƒ‹ƒCƒ[ƒW‚Ìƒtƒ@ƒCƒ‹–¼>
+       + < ƒJ[ƒlƒ‹ƒCƒ[ƒW‚Ìƒtƒ@ƒCƒ‹–¼>: ‹N“®‚·‚éƒJ[ƒlƒ‹‚ÌƒJ[ƒlƒ‹ƒCƒ[ƒW
+***** (d) ro <root ƒfƒoƒCƒX>
+       + <root ƒfƒoƒCƒX>: ‹N“®‚É“Ç‚İ‚İê—p‚Åƒ}ƒEƒ“ƒg‚·‚éƒfƒoƒCƒXD
+***** (e) root=< ƒ‹[ƒgƒtƒ@ƒCƒ‹ƒVƒXƒeƒ€> < ‚»‚Ì‘¼‚Ìƒu[ƒgƒIƒvƒVƒ‡ƒ“>
+       + < ƒ‹[ƒgƒtƒ@ƒCƒ‹ƒVƒXƒeƒ€>: /root ‚ğŠ„‚è“–‚Ä‚½ƒp[ƒeƒBƒVƒ‡ƒ“
+       + < ‚»‚Ì‘¼‚Ìƒu[ƒgƒIƒvƒVƒ‡ƒ“>: quiet ‚ÍƒJ[ƒlƒ‹‚Ì‹N“®‚Éo—Í‚·‚éƒƒbƒZ[ƒW‚ğÈ—ª‚·‚éD
+***** (f) initrd < ‰ŠúRAM ƒfƒBƒXƒN–¼>
+       + < ‰ŠúRAM ƒfƒBƒXƒN–¼>: ‹N“®‚Éƒ}ƒEƒ“ƒg‚·‚é‰ŠúRAM ƒfƒBƒXƒN–¼
+**** (B) ÀsŒ ŒÀ‚Ì•t—^
+      + /etc/grub.d ‚ÅˆÈ‰º‚ÌƒRƒ}ƒ“ƒh‚ğÀs‚µCì¬‚µ‚½ƒXƒNƒŠƒvƒg‚ÉÀsŒ ŒÀ‚ğ•t—^‚·‚éD
+        : $ sudo chmod +x 11_linux-3.15.0
+**** (C) ƒGƒ“ƒgƒŠ’Ç‰Á—p‚ÌƒXƒNƒŠƒvƒg‚ÌÀs
+      + ˆÈ‰º‚ÌƒRƒ}ƒ“ƒh‚ğÀs‚µCì¬‚µ‚½ƒXƒNƒŠƒvƒg‚ğÀs‚·‚éD
+        : $ sudo update-grub
+      + ÀsŒãC/boot/grub/grub.cfg ‚ÉƒVƒXƒeƒ€ƒR[ƒ‹‚ğÀ‘•‚µ‚½ƒJ[ƒlƒ‹‚ÌƒGƒ“ƒgƒŠ‚ª’Ç‰Á‚³‚ê‚éD
+*** (8) Ä‹N“®
+     + ”CˆÓ‚ÌƒfƒBƒŒƒNƒgƒŠ‚ÅˆÈ‰º‚ÌƒRƒ}ƒ“ƒh‚ğÀs‚µCŒvZ‹@‚ğÄ‹N“®‚³‚¹‚éD
+       : $ sudo reboot
+     + GRUB2 ‚ÌƒJ[ƒlƒ‹‘I‘ğ‰æ–Ê‚ÉƒGƒ“ƒgƒŠ‚ª’Ç‰Á‚³‚ê‚Ä‚¢‚éDè‡(7) ‚ÌƒXƒNƒŠƒvƒg‚ğ—p‚¢‚½ê‡CƒJ[ƒlƒ‹‘I‘ğ‰æ–Ê‚ÅMy custom Linux ‚ğ‘I‘ğ‚µC‹N“®‚·‚éD
 
-   #+BEGIN_SRC shell-script
-     $ cd ~/Projects/BootCamp
-     $ mv myproject.tex specification.tex
-   #+END_SRC
 
-   ã¾ãŸï¼ŒTeX ãƒ•ã‚¡ã‚¤ãƒ«ã®åå‰ã«åˆã‚ã›ã¦ make ã®ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã‚’å¤‰æ›´ã™ã‚‹ï¼
-   ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆå›ºæœ‰ã®è¨­å®šã¯ï¼Œ =project.mk= ãƒ•ã‚¡ã‚¤ãƒ«ã«è¨˜è¿°ã—ã¦ãŠãã¨ï¼Œ
-   Makefile ã‹ã‚‰ include ã•ã‚Œã‚‹ï¼
-   =mybibdata.bib= ã¯ï¼Œå‚è€ƒæ–‡çŒ®ç”¨DBãƒ•ã‚¡ã‚¤ãƒ«ã§ã‚ã‚‹ï¼
-   =figs/fig.pdf= ã¯ï¼Œå›³ã‚’ã¾ã¨ã‚ãŸpdfãƒ•ã‚¡ã‚¤ãƒ«ã§ã‚ã‚‹ï¼
 
-   #+BEGIN_SRC makefile
-     #####################################################################
-     # Files in the project
-     #####################################################################
 
-     # if the main TeX file is ``myproject.tex'', set:
-     #   PROJECT = myproject
-     PROJECT = specification
-     PROJECT_BIB = mybibdata.bib
-
-     # All figure files are extracted from the single PDF file: FIG_MASTER_FILE.
-     # FIG_PAGES indicates which pages are extracted and used in the main TeX file.
-     #
-     # For example:
-     #   FIG_MASTER_FILE = figs/fig.pdf
-     #   FIG_PAGES     = 1 2 3 4 5
-     # makes:
-     #   figs/fig1.pdf ... figs/fig5.pdf from figs/fig.pdf
-     #
-     FIG_MASTER_FILE = figs/fig.pdf
-     FIG_PAGES       = 1 2 3 4 5
-   #+END_SRC
-
-** TeX çµ„ç‰ˆ (ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«) ã®ç¢ºèª
-
-   =Makefile= ã®ã‚ã‚‹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã§ï¼Œ =make= ã‚’å®Ÿè¡Œã™ã‚Œã°ï¼Œ
-   è³‡æ–™ã® pdf ãƒ•ã‚¡ã‚¤ãƒ«ãŒç”Ÿæˆã•ã‚Œã‚‹ï¼
-
-** ä¸è¦ãªãƒ•ã‚¡ã‚¤ãƒ«ã®å¤‰æ›´ï¼Œå‰Šé™¤
-
-   ãƒ†ãƒ³ãƒ—ãƒ¬ãƒ¼ãƒˆã‚’æ­£ã—ãåˆ©ç”¨ã§ããŸã‚‰ï¼Œ
-   ä»¥ä¸‹ã®ãƒ•ã‚¡ã‚¤ãƒ«ã¯ï¼Œè‡ªèº«ã®è³‡æ–™ã«åˆã†å†…å®¹ã«å¤‰æ›´ã™ã‚‹ã‹å‰Šé™¤ã—ï¼Œ
-   ãã®ã¾ã¾ commit ã«å…¥ã‚‰ãªã„ã‚ˆã†ã«æ°—ã‚’ä»˜ã‘ã‚‹ï¼
-
-   + README.org (ã“ã®ãƒ•ã‚¡ã‚¤ãƒ«)
-   + *.pdf
-
-   ãªãŠï¼Œ =project.mk= ã«ã¦ï¼Œ =FIG_MASTER_FILE= ã‚’è¨­å®šã—ãŸéš›ã«ã¯ï¼Œ =FIG_MASTER_FILE= ä»¥å¤–ã®ãƒ•ã‚¡ã‚¤ãƒ«ã‚’æ¶ˆã™ã“ã¨ï¼
-   ã¾ãŸï¼Œè³‡æ–™ãŒå®Œæˆã—ãŸéš›ã«ã¯ï¼Œæœ€çµ‚æˆæœç‰©ã¨ã—ã¦pdfã‚’ commit ã«è¿½åŠ ã—ãŸã»ã†ãŒã‚ˆã„ï¼
-
-* ãƒˆãƒ©ãƒ–ãƒ«ã‚·ãƒ¥ãƒ¼ãƒ†ã‚£ãƒ³ã‚°
-** TeXã®ãƒãƒ¼ã‚¸ãƒ§ãƒ³ã«ã‚ˆã‚‹å›³ã®æŒ¿å…¥æ–¹æ³•ã®é•ã„
-   TeX ã®ãƒãƒ¼ã‚¸ãƒ§ãƒ³ã«ã‚ˆã£ã¦ï¼Œå›³ã‚’æŒ¿å…¥ã™ã‚‹ä½œæ³•ãŒè‹¥å¹²ç•°ãªã‚‹ï¼
-   æ¯”è¼ƒçš„æœ€è¿‘ã®TeX (texlive) ã‚’ä½¿ã£ã¦ xbb å½¢å¼ã‚’ç”¨ã„ã¦ã„ã‚Œã°ï¼Œ
-   ãƒ†ãƒ³ãƒ—ãƒ¬ãƒ¼ãƒˆã® =Makefile= ãŒãã®ã¾ã¾åˆ©ç”¨ã§ãã‚‹ãŒï¼Œ
-   å°‘ã—å¤ã„ ptex ã‚’ç”¨ã„ã‚‹å ´åˆã¯ï¼Œbb å½¢å¼ã§ã‚ã‚‹ãŸã‚ï¼Œå›³ã®æŒ¿å…¥ã«å¤±æ•—ã™ã‚‹ï¼
-
-   ã§ãã‚Œã°ï¼Œæ–°ã—ã„ texlive ã‚’ä½¿ã†ã“ã¨ã‚’æ¨å¥¨ã™ã‚‹ãŒï¼Œtexlive ã®æ›´æ–°ãŒä¸å¯èƒ½ãªå ´åˆã¯ï¼Œ
-   Makefile ä¸­ã® xbb ã‚’å…¨ã¦ bb ã«ç½®ãæ›ãˆã‚‹ï¼ä¾‹ãˆã°ï¼Œä»¥ä¸‹ã®é€šã‚Šï¼
-   ä»–ã«ã‚‚å¤‰æ›´å€‹æ‰€ãŒã„ãã¤ã‹ã‚ã‚‹ã®ã§æ°—ã‚’ä»˜ã‘ã‚‹ï¼
-   #+BEGIN_SRC diff
-     @@ -80,7 +80,7 @@ FIG_PAGES       = 1 2 3 4 5
-
-      TEX_FILES      = ${PROJECT}.tex
-      FIG_PDF_FILES := $(foreach n, $(FIG_PAGES), $(call addpage,$(FIG_MASTER_FILE),$(n)))
-     -FIG_EBB_FILES := $(foreach n, $(FIG_PAGES), $(call addpage,$(FIG_MASTER_FILE),$(n),xbb))
-     +FIG_EBB_FILES := $(foreach n, $(FIG_PAGES), $(call addpage,$(FIG_MASTER_FILE),$(n),bb))
-
-      #####################################################################
-      # Common rules
-     @@ -98,7 +98,7 @@ ${FIG_PDF_FILES} : ${FIG_MASTER_FILE}
-                     -dLastPage=$(call pagenum,$*)   \
-                     -sOutputFile=$@ ${FIG_MASTER_FILE} 2>/dev/null
-
-     -${FIG_EBB_FILES} : %.xbb : %.pdf
-     +${FIG_EBB_FILES} : %.bb : %.pdf
-             @echo "Making $@ from $<"
-             @${GS} -sDEVICE=bbox -r100 $< 2> $@
-   #+END_SRC
-
-* è³‡æ–™ä½œæˆã®è«¸æ³¨æ„
-  ãƒªãƒã‚¸ãƒˆãƒªæ§‹æˆç­‰ã®è³‡æ–™ä½œæˆã®è«¸æ³¨æ„ã«ã¤ã„ã¦ã¯,
-  åˆ¥é€”ä»¥ä¸‹ã‚’å‚ç…§ã®ã“ã¨ï¼(GitHub ã®ãƒ­ã‚°ã‚¤ãƒ³ãŒå¿…è¦)ï¼
-
-  1) [[https://github.com/nomlab/nompedia/wiki/About-presentation][ç ”ç©¶ä¼šç™ºè¡¨ã®æº–å‚™æ‰‹é †ã¨æ³¨æ„ç‚¹]]
-  2) [[https://github.com/nomlab/nompedia/wiki/About-paper-submission#user-content-%E8%AB%96%E6%96%87%E5%9F%B7%E7%AD%86%E3%81%AE%E9%9A%9B%E3%81%AE%E6%B3%A8%E6%84%8F%E7%82%B9][è«–æ–‡åŸ·ç­†ã®éš›ã®æ³¨æ„ç‚¹]]
-
-  ãƒªãƒã‚¸ãƒˆãƒªä½œæˆã®éš›ã«ä»¥ä¸‹ã‚’æ³¨æ„ã™ã‚‹ã“ã¨ï¼
-  + ä¸è¦ãªãƒ•ã‚¡ã‚¤ãƒ«ã¯ã‚³ãƒŸãƒƒãƒˆã—ãªã„ï¼
-  + ä»–äººãŒå¾Œã‹ã‚‰ä½¿ãˆã‚‹ã‚ˆã†ã«é…æ…®ã™ã‚‹ï¼(è³‡æ–™ã® cls ãƒ•ã‚¡ã‚¤ãƒ«ã‚„ fig ã‚‚å…¥ã‚Œã¦ãŠã)
-  + ç‹¬è‡ªã®æ–¹æ³•ã§ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«ãŒå¿…è¦ãªå ´åˆã¯ï¼Œãã®æ—¨ã‚’ README ã«è¨˜è¼‰ã™ã‚‹ï¼
