@@ -37,7 +37,7 @@
 ** Test
 *** Incoming WebHooksのテスト
    + 以下のコマンドを用いる．
-	 : $ curl -X POST -H 'Content-type: application/json' --data '{"text”:”hogehoge”}’ https://hooks.slack.com/services/your-incoming-webhooks-url
+	 : $ curl -X POST -H 'Content-type: application/json' --data '{"text":"hogehoge"}' https://hooks.slack.com/services/your-incoming-webhooks-url
        + 上記の `your-incoming-webhooks-url`には，上述の「Incoming WebHooksの設定」の手順で生成した Incoming WebHooks の URL を記述すること．
        + 上記のコマンドは，Incoming WebHooks で指定した URL に，JSONの形式のデータを post している．
 
