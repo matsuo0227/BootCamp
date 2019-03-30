@@ -1,0 +1,274 @@
+#+TITLE: 新人研修課題
+#+AUTHOR: Nomura Laboratory, Okayama University
+#+EMAIL:
+#+DATE:
+#+OPTIONS: H:3 num:2 toc:nil
+#+OPTIONS: ^:nil @:t \n:nil ::t |:t f:t TeX:t
+#+OPTIONS: skip:nil
+#+OPTIONS: author:t
+#+OPTIONS: email:nil
+#+OPTIONS: creator:nil
+#+OPTIONS: timestamp:nil
+#+OPTIONS: timestamps:nil
+#+OPTIONS: d:nil
+#+OPTIONS: tags:t
+#+TEXT:
+#+DESCRIPTION:
+#+KEYWORDS:
+#+LANGUAGE: ja
+#+STARTUP: odd
+#+LATEX_CLASS: jsarticle
+#+LATEX_CLASS_OPTIONS: [a4j]
+# #+LATEX_HEADER: \usepackage{plain-article}
+# #+LATEX_HEADER: \renewcommand\maketitle{}
+# #+LATEX_HEADER: \pagestyle{empty}
+# #+LaTeX: \thispagestyle{empty}
+
+** 2019年度新人研修課題について
+2019年度の新人研修課題の概要は以下のページに記載している．
+
+[[https://github.com/nomlab/nompedia/wiki/Boot-Camp-2019][2019年度新人研修課題概要]]
+
+** 目次
+- [[#debianインストール手順][Debianインストール手順]]
+- [[#linux再構築の手順][Linux再構築の手順]]
+- [[#システムコールの実装][システムコールの実装]]
+- [[#rubyによるslackbotプログラムの作成][RubyによるSlackBotプログラムの作成]]
+
+* Debianインストール手順
+** (1) システム言語の設定
+*** Select a language
++ Language: Englishを選択
+** (2) 地域の設定
+*** Select your location
++ Country, territory or area: other -> Asia -> Japan を選択
+** (3) ロケールの設定
+*** Configure locales
++ Country to base default locale settings on: United States - en_US.UTF-8 を選択
+** (4) キーボードの設定
+*** Configure the Keyboard
++ Keymap to use: Japanese
+** (5) ネットワークの設定
+*** Detect network hardware
++ USBの挿入(対応するNicドライバがインストーラにない場合表示される．この場合，USBからドライバをインストールする．本研修課題では，ドライバのインストールされたUSBを先輩から借りるものとする．)
++ Load missing firmware from removable media? <Yes>
+*** Configure the network
++ Hostname: sugi(ノード1用ならsugi1，ノード2用ならsugi2)
++ Domain name: なし
+** (6) ユーザとパスワードの設定
+*** Set up users and passwords
++ Root password: パスワード(いつもの)
++ Re-enter password to verify:
++ Full name for the new user: フルネーム(例: Keisuke Sugi)
++ Username for your account: アカウント名(例: sugi)
++ Choose a password for the new user:　パスワード(いつもの)
++ Re-enter password to verify:
+** (7) パーティションの設定
+*** Partition disks
++ Manual を選択
+*** SCSI1 (0.0.0) (sda) - 80.0GB ATA ST380815AS
++ Create new empty partition table on this deice? <Yes>
++ pri/log 320.1GB FREE SPACE
++ Create a new partition -> 512 MB -> Primary -> Beginning -> Mount point:
+-> /boot - static files of the boot loader -> Done setting up the partition
++ Create a new partition -> 75.5 GB(残りの領域から4GB(メモリの2倍)のサイズを差し引いた大きさ) -> Primary -> Beginning
+-> Mount point:-> / - the root file system -> Done setting up the partition
++ Create a new partition -> 4 GB -> Primary -> Beginning -> Use as:
+-> Use as: swap area -> Done setting up the partition
+
++ Finish patitioning and write changes to disk を選択
++ Write the changes to disks? <Yes>
+
+** (8) パッケージの設定
+*** Configure the package manager
++ Scan another CD or DVD? <No>
++ Use a network mirror? <Yes>
++ Debian archive mirror country: Japan
++ Debian archive mirror: ftp.riken.jp
++ HTTP proxy information (blank for none):なし
++ Cannot access repository <Continue>
+** (9) 調査への協力の設定
+*** Configuring popularity-contest
++ Participate in the package usage survey? <No>
+** (10) インストールするソフトウェアの設定
+*** Software selection
++ Choose software to install:スペースキーを用いて「SSH server」以外のすべてのチェックを外す
+** (11) ブートローダの設定
+*** Install the GRUB boot loader on a hard disk 
++ Install the GRUB boot loader to the master boot record? <Yes>
++ Device for boot loader installation: /dev/sda (sdaのとき)
+** (12) システムクロックの設定
+*** Finish the installation
++ Is the system clock set to UTC? <Yes>
+
+* Linux再構築の手順
+** 環境設定
+*** (1) APTのリポジトリの設定
+     + パッケージのダウンロード元設定ファイルであるsources.listを編集し，ダウンロード元としてcdromを削除する．
+       : $ su
+       : # vi /etc/apt/sources.list (エディタが起動するので，"cdromから始まる行を削除またはコメントアウトする．)
+*** (2) sudo権限の付与
+     + sudoをインストールし，ユーザにsudo権限を与える．以下のコマンドを実行する．
+       : $ su
+       : # apt-get update
+       : # apt-get install sudo
+       : # visudo (エディタが起動するので，"root ALL=(ALL) ALL"の直後に"takaie ALL=(ALL) ALL"を追加する)
+*** (2) gitとgccのインストール
+     + git，gcc，およびmakeをインストールする．以下のコマンドを実行する．
+       : $ sudo apt-get update
+       : $ sudo apt-get install git gcc make
+*** (3) カーネル再構築で使用するライブラリとコマンドのインストール
+     + カーネル再構築で使用するライブラリとコマンドをインストールする．以下のコマンドを実行する．
+       : $ sudo apt-get install libncurses5-dev (make menuconfigやデバイス分割で用いる)
+       : $ sudo apt-get install bc (カーネルの再構築で実行するコマンドで用いる)
+** Linuxカーネルの取得
+*** (1) Linuxのソースコードの取得
+     + Linuxのソースコードを取得する．LinuxのソースコードはGitで管理されている．Gitとはオープンソースの分散型バージョン管理システムである．下記のGitリポジトリからクローンし，Linuxのソースコードを取得する．
+       : git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+     + リポジトリとはディレクトリを保存する場所のことであり，クローンとはリポジトリの内容を任意のディレクトリに複製することである．本手順書では/home/takaie/git以下でソースコードを管理する．/home/takaieで以下のコマンドを実行する．
+       : $ mkdir git
+       : $ cd git
+       : $ git clone git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+     + 実行後，mkdirコマンドにより/home/takaie以下にgitディレクトリが作成される．そして，cdコマンドにより，gitディレクトリに移動する．git cloneコマンドにより，/home/takaie/git以下にlinux-stableディレクトリが作成される．linux-stable以下にLinuxのソースコードが格納されている．
+*** (2) ブランチの切り替え
+     + Linuxのソースコードのバージョンを切り替えるため，ブランチの作成と切り替えを行う．ブランチとは開発の履歴を管理するための分岐である．/home/takaie/git/linux-stableで以下のコマンドを実行する．
+       : $ git checkout -b 3.16 v3.16
+     + 実行後，v3.16というタグが示すコミットからブランチ3.16が作成され，ブランチ3.16に切り替わる．コミットとはある時点における開発の状態を記録したものである．タグとはコミットを識別するためにつける印である．
+** カーネルの再構築 
+    + 以下の手順でカーネルの再構築を行う．コマンドは/home/takaie/git/linux-stable以下で実行する．
+*** (1) .config ファイルの作成
+     + .configファイルを作成する．.configファイルとはカーネルの設定を記述したコンフィギュレーションファイルである．以下のコマンドを実行し，インストールしたDebianのコンフィギュレーションファイルをコピーする．
+       : $ cp /boot/config-3.16.0-6-amd64 .config
+     + 実行後，/home/takaie/git/linux-stable以下に.configファイルが作成される．
+*** (2) カーネルのコンパイル
+     + Linuxカーネルをコンパイルする．以下のコマンドを実行する．
+       : $ make bzImage -j8
+     上記コマンドの「-j」オプションは，同時に実行できるジョブ数を指定する．ジョブ数を不用意に増やすとメモリ不足により，実行速度が低下する場合がある．ジョブ数はCPUのコア数*2が効果的である．コマンド実行後，/home/takaie/git/linux-stable/arch/x86/boot以下にbzImageという名前の圧縮カーネルイメージが作成される．カーネルイメージとは実行可能形式のカーネルを含むファイルである．同時に，/home/takaie/git/linux-stable以下にすべてのカーネルシンボルのアドレスを記述したSystem.mapが作成される．カーネルシンボルとはカーネルのプログラムが格納されたメモリアドレスと対応付けられた文字列のことである．
+*** (3) カーネルのインストール
+     + コンパイルしたカーネルをインストールする．以下のコマンドを実行する．
+       : $ sudo cp /home/takaie/git/linux-stable/arch/x86/boot/bzImage /boot/vmlinuz-3.16.0-linux
+       : $ sudo cp /home/takaie/git/linux-stable/System.map /boot/System.map-3.16.0-linux
+     + 実行後，bzImageとSystem.mapがboot以下にそれぞれvmlinuz-3.16.0-linuxとSystem.map-3.16.0-linuxという名前でコピーされる．
+*** (4) カーネルモジュールのコンパイル
+     + カーネルモジュールをコンパイルする．カーネルモジュールとは機能を拡張するためのバイナリファイルである．以下のコマンドを実行する．
+       : $ make modules
+*** (5) カーネルモジュールのインストール
+     + コンパイルしたカーネルモジュールをインストールする．以下のコマンドを実行する．
+       : $ sudo make modules_install
+     + 実効結果の最後の行は以下のように表示される．これはカーネルモジュールをインストールしたディレクトリ名を表している．
+       : DEPMOD 3.16.0
+     + 上記の例では，/lib/modules/3.16.0 ディレクトリにカーネルモジュールがインストールされている．このディレクトリ名は手順(6) で必要となるため，控えておく．
+*** (6) 初期RAMディスクの作成
+     + 初期RAMディスクを作成する．初期RAMディスクとは初期ルートファイルシステムのことである．これは実際のルートファイルシステムが使用できるようになる前にマウントされる．以下のコマンドを実行する．
+       : $ sudo update-initramfs -c -k 3.16.0
+     + 手順(5) で控えておいたディレクトリ名をコマンドの引数として与える．実行後，/boot 以下に初期RAM ディスクinitrd.img-3.16.0 が作成される．
+*** (7) ブートローダの設定
+     + システムコールを実装したカーネルをブートローダから起動可能にするために，ブートローダを設定する．ブートローダの設定ファイルは/boot/grub/grub.cfg である．エントリを追加するためにはこのファイルを編集する必要がある．Debian8.11 で使用されているブートローダはGRUB2 である．GRUB2 でカーネルのエントリを追加する際，設定ファイルを直接編集しない．/etc/grub.d 以下にエントリ追加用のスクリプトを作成し，そのスクリプトを実行することでエントリを追加する．ブートローダを設定する手順を以下に示す．
+**** (A) エントリ追加用のスクリプトの作成
+      + カーネルのエントリを追加するため，エントリ追加用のスクリプトを作成する．本手順書では，既存のファイル名に倣い作成するスクリプトのファイル名は11_linux-3.16.0 とする．スクリプトの記述例を以下に示す．
+        : 1 #!/bin/sh -e
+        : 2 echo "Adding my custom Linux to GRUB2"
+        : 3 cat << EOF
+        : 4 menuentry "My custom Linux" {
+        : 5 set root=(hd0,1)
+        : 6 linux /vmlinuz-3.16.0-linux ro root=/dev/sda2 quiet
+        : 7 initrd /initrd.img-3.16.0
+        : 8 }
+        : 9 EOF
+      + スクリプトに記述された各項目について以下に示す．
+***** (a) menuentry < 表示名>
+       + < 表示名>: カーネル選択画面に表示される名前
+***** (b) set root=(<HDD 番号>,< パーティション番号>)
+       + <HDD 番号>: カーネルが保存されているHDD の番号
+       + < パーティション番号>: HDD の/boot が割り当てられたパーティション番号
+***** (c) linux < カーネルイメージのファイル名>
+       + < カーネルイメージのファイル名>: 起動するカーネルのカーネルイメージ
+***** (d) ro <root デバイス>
+       + <root デバイス>: 起動時に読み込み専用でマウントするデバイス．
+***** (e) root=< ルートファイルシステム> < その他のブートオプション>
+       + < ルートファイルシステム>: /root を割り当てたパーティション
+       + < その他のブートオプション>: quiet はカーネルの起動時に出力するメッセージを省略する．
+***** (f) initrd < 初期RAM ディスク名>
+       + < 初期RAM ディスク名>: 起動時にマウントする初期RAM ディスク名
+**** (B) 実行権限の付与
+      + /etc/grub.d で以下のコマンドを実行し，作成したスクリプトに実行権限を付与する．
+        : $ sudo chmod +x 11_linux-3.16.0
+**** (C) エントリ追加用のスクリプトの実行
+      + 以下のコマンドを実行し，作成したスクリプトを実行する．
+        : $ sudo update-grub
+      + 実行後，/boot/grub/grub.cfg にシステムコールを実装したカーネルのエントリが追加される．
+*** (8) 再起動
+     + 任意のディレクトリで以下のコマンドを実行し，計算機を再起動させる．
+       : $ sudo reboot
+     + GRUB2 のカーネル選択画面にエントリが追加されている．手順(7) のスクリプトを用いた場合，カーネル選択画面でMy custom Linux を選択し，起動する．
+
+* システムコールの追加
+** 概要
+   再構築したLinuxカーネルに新たにシステムコールを実装する．
+  
+** 追加するシステムコールの機能
+   追加するシステムコールの機能は以下の通りである．
+   1) カーネルのメッセージバッファに任意の文字列を出力するシステムコール
+   また，発展課題として，以下の機能を持つシステムコールを追加してもよい．
+   1) 任意のメモリ領域に文字列を書き込むシステムコール
+   2) IPIを送信するシステムコール
+   なお，作成したシステムコールに対して glibc への登録は必須としない．必要に応じて各自で行う．
+  
+** システムコールの追加手法
+   システムコールの追加手法に関しては，記載しないため，各自で調査すること．
+  
+** 成果物について
+*** システムコール追加の手順書
+    システムコール追加の手順書には，以下の内容を記載すること．
+    1) 追加環境
+    2) 追加したシステムコールの概要
+      1) 形式
+      2) 引数
+      3) 戻り値
+      4) 機能
+    3) システムコール追加の手順
+    4) テスト
+    
+* RubyによるSlackBotプログラムの作成
+** 概要
+	 以下の2つの機能をもつSlackBotプログラムを作成する．
+	 1) 任意の文字列を発言するプログラムの作成
+	 2) SlackBotプログラムへの機能追加
+
+** 環境構築
+	環境構築の詳細については，本ディレクトリ下のSlackBotディレクトリのREADME.orgに示す．
+
+** 作成する機能
+*** 任意の文字列を発言するプログラムの作成
+    SlackBotプログラムの作成には，Rubyを用いる．
+    使用する Ruby のバージョンは2.5.1である．
+    また，以下の2つの機能を持つSlackBotクラスを用いる．
+    1) SlackのIncoming Webhooksを利用し，発言する機能
+    2) SlackのOutgoing Webhooksによって発言を取得した場合，反応する機能
+    上記2つの機能を持つSlackBotクラスを継承したクラスを新たに作成し，
+    以下の機能を実装する．動作を確認した時点でM1もしくはM2に確認してもらう．
+    1) 受信した発言の中に``「○○○」と言って''という文字列があった場合は，``○○○''と発言する．
+
+*** SlackBotプログラムへの機能追加
+    SlackBotプログラムへ機能を追加する．
+    Slack以外のWebサービスのAPIやWebhookを利用した機能を追加する．
+    追加する機能の例を以下に示す．
+    1) 検討打合せの3日前ならば予定を発言
+    2) 今日の天気を発言
+    3) 商品の検索結果を発言
+    4) ニュースサイトのIT関連のニュースを発言
+** 成果物について
+*** SlackBotプログラムの仕様書
+    SlackBotプログラムの仕様書には，以下の6つの項目があること．
+    1) 概要
+    2) 機能
+    3) 動作環境
+    4) 動作確認済み環境
+    5) 使用方法
+    6) エラー処理と保証しない動作
+
+*** SlackBotプログラムの報告書
+    SlackBotプログラムの報告書には，以下の3つの項目があること．
+    1) 理解できなかった部分
+    2) 作成できなかった機能
+    3) 自主的に作成した機能

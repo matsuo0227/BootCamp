@@ -1,0 +1,33 @@
+#+TITLE: 提出資料の作成について
+#+AUTHOR: Nomura Laboratory, Okayama University
+#+EMAIL:
+#+DATE:
+#+OPTIONS: H:3 num:2 toc:nil
+#+OPTIONS: ^:nil @:t \n:nil ::t |:t f:t TeX:t
+#+OPTIONS: skip:nil
+#+OPTIONS: author:t
+#+OPTIONS: email:nil
+#+OPTIONS: creator:nil
+#+OPTIONS: timestamp:nil
+#+OPTIONS: timestamps:nil
+#+OPTIONS: d:nil
+#+OPTIONS: tags:t
+#+TEXT:
+#+DESCRIPTION:
+#+KEYWORDS:
+#+LANGUAGE: ja
+#+STARTUP: odd
+#+LATEX_CLASS: jsarticle
+#+LATEX_CLASS_OPTIONS: [a4j]
+# #+LATEX_HEADER: \usepackage{plain-article}
+# #+LATEX_HEADER: \renewcommand\maketitle{}
+# #+LATEX_HEADER: \pagestyle{empty}
+# #+LaTeX: \thispagestyle{empty}
+
+各提出物について，以下のディレクトリを作成して資料を作成する．
++ システムコール実装の手順書: syscall-manual/
++ SlackBotプログラムの仕様書: slackbot-specification/
++ SlackBotプログラムの報告書: slackbot-report/
+
+資料テンプレートと執筆の仕方は，以下を参考にするとよい．
++ [[https://github.com/nomlab/nompedia/tree/master/Templates/Home/mydocuments/meeting][https://github.com/nomlab/nompedia/tree/master/Templates/Home/mydocuments/meeting]]
