@@ -1,0 +1,405 @@
+\documentclass[12pt]{jsarticle}
+\usepackage[dvipdfmx]{graphicx}
+\textheight = 25truecm
+\textwidth = 18truecm
+\topmargin = -1.5truecm
+\oddsidemargin = -1truecm
+\evensidemargin = -1truecm
+\marginparwidth = -1truecm
+
+\def\theenumii{\Alph{enumii}}
+\def\theenumiii{\alph{enumiii}}
+\def\labelenumi{(\theenumi)}
+\def\labelenumiii{(\theenumiii)}
+\def\theenumiv{\roman{enumiv}}
+\def\labelenumiv{(\theenumiv)}
+\usepackage{comment}
+\usepackage{url}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% sty/ にある研究室独自のスタイルファイル
+\usepackage{jtygm}  % フォントに関する余計な警告を消す
+\usepackage{nutils} % insertfigure, figref, tabref マクロ
+
+\usepackage{listings}
+
+\renewcommand{\lstlistingname}{プログラム}
+\lstset{%
+  basicstyle={\small},%
+  identifierstyle={\small},%
+  commentstyle={\small\itshape},%
+  keywordstyle={\small\bfseries},%
+  ndkeywordstyle={\small},%
+  stringstyle={\small\ttfamily},
+  frame={l},
+  breaklines=true,
+  columns=[l]{fullflexible},%
+  numbers=left,%
+  xrightmargin=0zw,%
+  xleftmargin=3zw,%
+  numberstyle={\scriptsize},%
+  stepnumber=1,
+  numbersep=1zw,%
+  lineskip=-0.5ex%
+}
+
+
+\def\figdir{./figs} % 図のディレクトリ
+\def\figext{pdf}    % 図のファイルの拡張子
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 表題
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{center}
+{\LARGE システムコール追加の手順書}
+\end{center}
+
+\begin{flushright}
+  2019/4/15\\
+  松尾 和樹
+\end{flushright}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 概要
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{はじめに}
+\label{sec:introduction}
+本手順書では，カーネルのメッセージバッファに任意の文字列を出力するシステムコールをLinuxカーネルへ追加した際の手順を示す．
+また，本手順書は，読者としてコンソールの基本的な操作を習得している者を想定する．
+以下に本手順書の章立てを示す．
+\begin{description}
+\item[1章] はじめに
+\item[2章] 実装環境
+\item[3章] Linuxカーネルの取得
+\item[4章] システムコールの追加
+\item[5章] テスト
+\item[6章] おわりに
+\end{description}
+
+\section{実装環境}\label{sec:environment}
+実装環境を\tabref{tab:environment}に示す．
+
+\begin{table}[h]
+  \begin{center}
+    \caption{実装環境}\label{tab:environment}
+    \ecaption{Linux environment}
+    \begin{tabular}{l|l}
+      \hline
+      \hline
+      OS & Debian GNU/Linux 8.11\\
+      カーネル & Linux カーネル 3.16.0\\
+      CPU & Intel(R) Core(TM) i7-870 @2.93GHz\\
+      メモリ & 2.0GB\\
+      \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+\section{Linuxカーネルの取得}\label{sec:get kernel}
+\subsection{Linuxカーネルのソースコードの取得}\label{subsec:get kernel code}
+Linuxカーネルのソースコードを取得する．Linuxカーネルのソースコードは分散型バージョン管理システムであるGitによって管理されている．GitリポジトリからLinuxカーネルのソースコードをクローンする．
+リポジトリとはディレクトリを保存する場所のことであり，クローンとはリポジトリの内容を任意のディレクトリに複製することである．
+Linuxカーネルのリポジトリを以下に示す．
+
+\begin{verbatim}
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+\end{verbatim}
+
+\noindent
+上記リポジトリからカーネルのソースコードをクローンする．本手順書ではホームディレクトリ以下へクローンする．自身のホームディレクトリで以下のコマンドを実行する．
+\begin{verbatim}
+$ mkdir git
+$ cd git
+$ git clone git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+\end{verbatim}
+まず，\verb|mkdir|コマンドを実行することにより，ホームディレクトリ以下にgitディレクトリが作成される．\verb|cd|コマンドにより，gitディレクトリに入る．その後，\verb|git clone <リポジトリ>| コマンドでカレントディレクトリにリポジトリがコピーされる．
+
+\subsection{ブランチの作成と切り替え}\label{subsec:checkout branch}
+Linuxのソースコードのバージョンを切り替えるため，ブランチの作成と切り替えを行う．
+ブランチとは開発の履歴を管理するための分岐である．
+\verb|~/git/linux-stable|で以下のコマンドを実行する．\verb|~/|は自身のホームディレクトリを表す．
+\begin{verbatim}
+$ git checkout -b 3.16 v3.16
+\end{verbatim}
+上記コマンドを実行後，v3.16というタグが示すコミットからブランチ3.16が作成され，現在のブランチが3.16に切り替わる．
+
+\section{システムコールの追加}\label{sec:add systemcall}
+\subsection{ソースコードの編集}\label{subsec:edit source code}
+以下の手順でソースコードを編集する．本手順では，既存のファイルの内容の変更を示す際，書き加えた行の先頭には
+\verb|+|を，削除した行の先頭には\ \verb|-|\ を付与する．
+\begin{enumerate}
+\item 自作のシステムコールの作成 \label{enum:make systemcall}
+
+カーネルのメッセージバッファに任意の文字列を出力するシステムコールを作成するために，システムコール本体を\verb|my_syscall.c|というファイルを作成する．システムコールのソースコードは付録Aに示す．
+ファイルは\verb|~/git/linux-stable/kernel|以下へ配置する．作成するシステムコールの関数名は\verb|sys_my_syscall|とした．追加したシステムコールの仕様を以下に示す．
+
+
+\begin{description}
+\item [【形式】]      \verb|asmlinkage void sys_my_syscall(char* buf)|
+\item [【引数】]      \verb|char* buf|
+\item [【戻り値】]    無し
+\item [【機能】]      引数で受け取った任意の文字列をカーネルのメッセージバッファに書き出す
+\end{description}
+
+
+
+\item システムコールのプロトタイプ宣言 \label{enum:def systemcall}
+
+作成したシステムコールはヘッダファイルでプロトタイプ宣言をする必要がある．
+そこで，\verb|~/git/linux-stable/include/linux/syscalls.h|を以下のように編集し，作成したシステムコールの
+プロトタイプ宣言を行う．
+
+\begin{verbatim}
+  868 asmlinkage long sys_finit_module\
+      (int fd, const char __user *uargs, int flags);
++ 869 asmlinkage void sys_my_syscall(char* buf)
+\end{verbatim}
+
+
+\item システムコール番号の追加 \label{enum:add systemcall number}
+
+作成したシステムコールに番号を定義する．システムコール番号は
+\newline
+\verb|~/git/linux-stable/arch/x86/syscall/syscall_64.tbl|で定義されている．今回は作成したシステムコールの番号を317とした．\verb|syscall_64.tbl|を以下のように編集する．
+
+\begin{verbatim}
+  325 316 common renameat2 sys_renameat2
++ 326 317 common my_syscall sys_my_syscall
+\end{verbatim}
+
+\noindent
+空白は本来，スペースではなくタブを入力する．フォーマットは
+
+\begin{verbatim}
+<システムコール番号> <ビット数> <関数名> <呼び出すときの名前>
+\end{verbatim}
+
+\noindent
+となっている．ビット数はcommonとすれば64ビットOS，32ビットOSどちらでも使用できる．
+
+\item Makefileの編集 \label{enum:edit Makefile}
+カーネルの再構築の際，作成したシステムコールを自動でコンパイルするように
+\verb|~/git/linux-stable/kernel|以下の\verb|Makefile|を以下のように編集する．
+\begin{verbatim}
+- 13 async.o range.o groups.o smpboot.o
++ 13 async.o range.o groups.o smpboot.o my_syscall.o
+\end{verbatim}
+
+これは(\ref{enum:make systemcall})で作成した
+\verb|my_syscall.c|のオブジェクトファイルであるため，名称は作成したシステムコールの
+ファイルに合わせる．
+\end{enumerate}
+
+\subsection{カーネルの再構築}\label{subsec:rebuild kernel}
+以下の手順でカーネルの再構築を行う．以下のコマンドは\verb|~/git/linux-stable|以下で実行する．
+\begin{enumerate}
+\item .configファイルのコピー \label{enum:make config}
+
+\verb|.config|ファイルをコピーする．\verb|.config|ファイルはカーネルの設定が書かれたファイルである．以下のコマンドを実行する．
+\begin{verbatim}
+$ cp /boot/config-3.16.0-6-amd64 .config
+\end{verbatim}
+実行後，\verb|.config|ファイルがコピーされる．
+
+\item カーネルのコンパイル \label{enum:compile kernel}
+
+Linuxカーネルをコンパイルするために，以下のコマンドを実行する．
+\begin{verbatim}
+$ make bzImage -j8
+\end{verbatim}
+-jNオプションは同時に実行できるジョブの数である．不用意に増やすとメモリ不足により，実行速度が低下する可能性がある．指定するジョブ数はCPUのコア数*2が適切である．
+% CPUのコア数は以下のコマンドで取得できる．
+% \begin{verbatim}
+% $ cat /proc/cpuinfo
+% \end{verbatim}
+% 出力のcpu coresという項目がコア数である．
+このコマンドを実行後，\verb|~/git/linux-stable/arch/x86/boot|以下にbzImageという
+イメージファイルが作成される．このイメージファイルはLinuxカーネルを圧縮したものである．
+同時に，\verb|~/git/linux-stable|以下にすべてのカーネルシンボルのアドレスを記述したSystem.mapが作成される．カーネルシンボルとはカーネルのプログラムが格納されたメモリアドレスと対応付けられた文字列のことである．
+
+\item カーネルのインストール \label{enum:kernel install}
+
+コンパイルしたカーネルをインストールする．インストールは先ほどのコンパイルで作成されたファイルをコピーする．以下のコマンドを実行する．
+\begin{verbatim}
+$ sudo cp ~/git/linux-stable/arch/x86/boot/bzImage \
+                /boot/vmlinuz-3.16.0-linux
+$ sudo cp ~/git/linux-stable/System.map \
+                /boot/System.map-3.16.0-linux
+\end{verbatim}
+
+\item カーネルモジュールのコンパイル \label{enum:compile module}
+
+カーネルモジュールをコンパイルする．カーネルモジュールとは機能を拡張するためのバイナリファイルである．以下のコマンドを実行する．
+\begin{verbatim}
+$ make modules
+\end{verbatim}
+
+\item カーネルモジュールのインストール \label{enum:install module}
+
+コンパイルしたカーネルモジュールをインストールする．以下のコマンドを実行する．
+\begin{verbatim}
+$ sudo make modules_install
+\end{verbatim}
+実行結果の最後の行で``\verb|DEPMOD 3.16.0|''のように表示される．
+\verb|3.16.0|はディレクトリ名である．
+上記の例では，\verb|/lib/modules/3.16.0|以下にカーネルモジュールがインストールされている．このディレクトリ名は手順(\ref{enum:make init RAM})で必要となるため，控えておく．
+
+\item 初期RAMディスクの作成 \label{enum:make init RAM}
+
+初期RAMディスクを作成する．初期RAMディスクとは初期ルートファイルシステムのことである．これは実際のルートファイルシステムが使用できるようになる前にマウントされる．以下のコマンドを実行する．
+\begin{verbatim}
+$ sudo update-initramfs -c -k 3.16.0
+\end{verbatim}
+引数の最後には手順(\ref{enum:install module})で表示されたディレクトリ名を与える．実行後，\verb|/boot|以下に初期RAMディスク\verb|initrd.img-3.16.0|が作成される．
+
+\item ブートローダの設定 \label{enum:setting bootloader}
+
+システムコールを実装したカーネルをブートローダから起動するために，ブートローダの設定を行う．Debian 8.11ではブートローダはGRUB2が使用されている．GRUB2ではカーネルのエントリを追加する際，\verb|/etc/grub.d|以下にエントリ追加用のスクリプトを作成する．
+ブートローダの設定手順を以下に示す．
+
+\begin{enumerate}
+
+\item エントリ追加用のスクリプトの作成 \label{enum:make entry script}
+
+カーネルのエントリを追加するため，エントリ追加用のスクリプトを作成する．本手順書では，既存のファイル名に倣い作成するスクリプトのファイル名は\verb|11_linux-3.16.0|とする．スクリプトの記述例を以下に示す．
+
+\begin{verbatim}
+1 #!/bin/sh -e
+2 echo "Adding my custom Linux to GRUB2"
+3 cat << EOF
+4 menuentry "My custom Linux" {
+5 set root=(hd0,1)
+6 linux /vmlinuz-3.16.0-linux ro root=/dev/sda2 quiet
+7 initrd /initrd.img-3.16.0
+8 }
+9 EOF
+\end{verbatim}
+
+スクリプトに記述された各項目について以下に示す．
+\begin{enumerate}
+\item menuentry $<$表示名$>$
+
+    $<$表示名$>$:カーネル選択画面に表示される名前
+
+\item set root=($<$HDD番号$>$,$<$パーティション番号$>$)
+
+    $<$HDD番号$>$:カーネルが保存されているHDDの番号
+
+    $<$パーティション番号$>$:HDDの/bootが割り当てられたパーティション番号
+
+\item linux $<$カーネルイメージのファイル名$>$
+
+    $<$カーネルイメージのファイル名$>$:起動するカーネルのカーネルイメージ
+
+\item ro $<$rootデバイス$>$
+
+    $<$rootデバイス$>$:起動時に読み込み専用でマウントするデバイス
+
+\item root=$<$ルートファイルシステム$>$ $<$その他のブートオプション$>$
+
+    $<$ルートファイルシステム$>$:/rootを割り当てたパーティション
+
+    $<$その他のブートオプション$>$:quietはカーネルの起動時に出力するメッセージを省略する
+
+\item initrd $<$初期RAMディスク$>$
+
+    $<$初期RAM ディスク名$>$:起動時にマウントする初期RAMディスク名
+
+\end{enumerate}
+
+% 初期RAMディスクのディスク名が\verb|/initrd.img-3.16.0+|となっていることに注意する．
+
+\item 実行権限の付与 \label{enum:give executable}
+
+\verb|/etc/grub.d|で以下のコマンドを実行し，作成したスクリプトに実行権限を付与する．
+\begin{verbatim}
+$ sudo chmod +x 11_linux-3.16.0
+\end{verbatim}
+
+\item エントリ追加用のスクリプトの実行
+
+以下のコマンドを実行し，作成したスクリプトを実行する．
+\begin{verbatim}
+$ sudo update-grub
+\end{verbatim}
+実行後，/boot/grub/grub.cfg にシステムコールを実装したカーネルのエントリが追加される．
+
+\end{enumerate}
+
+\item 再起動
+
+以下のコマンドを実行し，計算機を再起動させる．
+\begin{verbatim}
+$ sudo reboot
+\end{verbatim}
+
+上記のエントリ追加用のスクリプトを用いた場合，GRUB2のカーネル選択画面に``My custom Linux''というエントリが追加されている．
+
+\end{enumerate}
+
+\section{テスト}\label{sec:test}
+\subsection{概要}\label{subsec:abst}
+カーネルのメッセージバッファに任意の文字列を出力するシステムコールが追加できているかを確かめるために，システムコールを呼び出すプログラムを作成して，テストを行う．テストの手順を以下に示す．
+\begin{enumerate}
+\item テストプログラムの作成 \label{enum:make test program}
+\item テストプログラムを実行 \label{enum:execute test program}
+\item カーネルバッファの内容を確認 \label{enum:check buffer}
+\end{enumerate}
+
+\subsection{テストプログラムの作成}\label{subsec:make test program}
+システムコールを実行するプログラムを作成する．プログラムの配置場所は任意である．
+本手順書では，テストプログラムの名前はtest.cとする．
+テストプログラムでは，\ref{subsec:edit source code}節(\ref{enum:add systemcall number})で定義したシステムコール番号を使用してシステムコールを呼び出す．
+また，任意の文字列として``\verb|Hello!|''を与える．テストプログラムは付録B
+に記載する．
+
+\subsection{テストプログラムの実行}\label{subsec:execute test program}
+作成したテストプログラムをコンパイルし，実行する．コンパイルと実行は以下のコマンドにより行う．
+\begin{verbatim}
+$ gcc -o test.out test.c
+$ ./test.out
+\end{verbatim}
+
+\subsection{カーネルのメッセージバッファの確認}\label{subsec:check buffer}
+カーネルのメッセージバッファの確認を行う．テストプログラムの実行後，以下のコマンドを実行する．
+\begin{verbatim}
+$ dmesg
+\end{verbatim}
+このコマンドにより，カーネルのメッセージバッファの中身が出力される．
+システムコールの追加と呼び出しができていれば出力の最後に以下のような結果が得られる．
+\begin{verbatim}
+[12174.167226] Hello!
+\end{verbatim}
+なお，``[ ]''の中の数値は計算機が起動してからの経過時間である．
+
+\section{おわりに}\label{sec:conclusion}
+本手順書では，カーネルのメッセージバッファに任意の文字列を出力するシステムコールの追加手順を示した．また，追加できたか否かをテストするための手順を示した．
+
+\section*{付録A}\label{appendix A}
+\begin{verbatim}
+ 1 #include <linux/kernel.h>
+ 2 #include <linux/syscalls.h>
+ 3 asmlinkage void sys_my_syscall(char* buf){
+ 4     printk("%s\n",buf);
+ 5 }
+\end{verbatim}
+
+\section*{付録B}\label{appendix B}
+\begin{verbatim}
+ 1 #include <stdio.h>
+ 2 #include <unistd.h>
+ 3 #include <sys/types.h>
+ 4 #include <sys/syscall.h>
+ 5
+ 6 #define SYS_MY_SYSCALL 317
+ 7
+ 8 int main(){
+ 9     char *buf;
+10     int a;
+11     a = syscall(SYS_MY_SYSCALL,buf);
+12     return 0;
+13 }
+\end{verbatim}
+
+
+\end{document}
