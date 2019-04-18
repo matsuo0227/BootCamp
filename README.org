@@ -1,0 +1,103 @@
+* SlackBot
+** Settings
+   + gemのインストール
+     + 以下のコマンドを実行し，gemをインストール\\
+	   : $ gem install bundler
+       : $ bundle install --path vendor/bundle
+   + Incoming WebHooksの設定
+     + 自分のSlackアカウントにログイン
+     + [[https://nomlab.slack.com/apps/manage/custom-integrations][Custome Integrations]]へアクセス
+       + Slack画面左上の「nomlab」 -> 「Customize Slack」 -> 左上の 「Menu」 から 「Configure Apps」 -> 「Custom Integrations」
+     + 「Incoming WebHooks」をクリック
+     + 「Add Configuration」から，新たなIncoming WebHookを追加
+     + 送信するチャンネルを選択(WebHookを追加後にも変更可能)し，「Add Incoming WebHooks integration」をクリックし，Webhook URLを取得
+       + 必要であれば，Customize NameもしくはCustomize Iconを設定
+   + Outgoing WebHooksの設定
+     + [[https://nomlab.slack.com/apps/manage/custom-integrations][Custome Integrations]]へアクセスし，「Outgoing WebHooks」をクリック
+     + 「Add Configuration」から，新たなOutgoing WebHookを追加
+     + 「Add Outgoing WebHooks integration」をクリック
+     + Outgoing WebHookに関して以下を設定
+       + Channel: 発言を監視するchannel
+       + Trigger Word(s): WebHookが動作する契機となる単語
+       + URL(s): WebHookが動作した際にPOSTを行うURL
+     + 必要であれば，Customize NameもしくはCustomize Iconを設定
+   + 以下のコマンドを実行し，settings.yml.sampleをsettings.ymlに変更
+     : $ cp settings.yml.sample settings.yml
+   + 本課題はHerokuを用いてBotを動作させることを想定している．
+	      + Herokuの設定については[[https://github.com/nomlab/nompedia/wiki/Tips#herokuの利用手順][Herokuの利用手順]] を参照
+   + 取得したIncomming WebHook URLをsettings.ymlに書き込む．
+     + incoming_webhook_url: https://XXXXXXXXXXXX
+   + Heorku-CLIを用いてIncomig WebHook URLをHerokuの環境変数に追加する．
+     : $ heroku config:set INCOMING_WEBHOOK_URL="https://XXXXXXXXXXXX"
+
+** Run
+   + 以下のコマンドでMySlackBot.rbをローカルで実行する．
+     : $ bundle exec rackup config.ru
+
+** Test
+*** Incoming WebHooksのテスト
+   + 以下のコマンドを用いる．
+	 : $ curl -X POST -H 'Content-type: application/json' --data '{"text":"hogehoge"}' https://hooks.slack.com/services/your-incoming-webhooks-url
+       + 上記の `your-incoming-webhooks-url`には，上述の「Incoming WebHooksの設定」の手順で生成した Incoming WebHooks の URL を記述すること．
+       + 上記のコマンドは，Incoming WebHooks で指定した URL に，JSONの形式のデータを post している．
+
+*** Outgoing WebHooksのテスト
+   + Slackや他のWebサービスのOutgoing WebHooksを用いた機能のテストをローカルで行いたい場合，testディレクトリ以下のpost_test.rbを利用すると良い．
+   + 上述の 「Run」の手順に従った上で，以下のコマンドを用いる．
+     : $ ruby test/post_test.rb http://localhost:<port>/<path> test/test.json
+       + 上記のコマンドでは，第1引数にPOST先URL，第2引数にPOSTするJSONが格納されているファイルパスを指定する．
+       + 上記のコマンドは，post_test.rbを用いることでWebサービスを装ってテストしている．
+   + 利用するWebHookがどのようなリクエストをPOSTするかを確認し，リクエスト例を用意する．
+   + リクエストのContent-TypeがJSONではない場合，post_test.rbに機能を追加し，JSON以外のContent-Typeを送れるように工夫する．
+
+** Details
+   + 課題の概要はnompediaの新人研修課題に記載する．
+     https://github.com/nomlab/nompedia/wiki/Boot-Camp-2017-GN
+   + WebHookの仕組みについては，Web勉強会にて説明する．
+     https://github.com/nomlab/nompedia/wiki/workshop035
+
+** Tips
+   + SlackBotの動作チェックを行うチャンネルは#sandboxが良い．
+   + Herokuにアプリケーションをデプロイする際は，ローカルで動作確認してからcommit，pushする．
+   + 初期の実装では，誰でもSlackになりすましてPOSTを行い，Botを動作させることが可能である．
+     + 自身が設定したOutgoing WebHooksのみで動作するようにできると良い．
+     + このとき，ローカルでのテスト用スクリプトpost_test.rbが問題なく動作するように改変を加える．
+   + Slackで発言される「@user_name」は内部で別の文字列で表現されているため，Botでmentionするためには工夫が必要である．
+   + Outgoing WebHooksと同じくあるイベントを契機に指定したURLにPOSTする機能としてSlash Commandsが提供されている．
+     + Slash Commandsでは，Slackにスラッシュ(/)から始まるコマンドを登録し，コマンドが実行された時にPOSTを行う．
+     + Outgoing WebHooksとSlash Commandsの違いについて考察し，Slash Commandを用いたBotの機能を実装できると良い．
+   + Slackの提供するWeb APIを利用することでSlackの情報を能動的に取得することが可能である．
+   + Outgoing WebHooksの代わりにSlackの提供するReal Time Messaging APIを用いてもSlackの発言をリアルタイムで取得できる．
+     + Outgoing WebHooksとReal Time Messaging APIの違いについて考察し，それぞれを用いたBotが実装できると良い．
+     + Real Time Messaging APIをRubyで扱う場合はGemを用いると良い．
+   + SlackのWeb APIとReal Time Messaging APIを利用するためにはアクセストークンが必要である．
+     + アクセストークンを取得する方法の1つとして，[[https://nomlab.slack.com/apps/manage/custom-integrations][Custome Integrations]]で新規のBotsを作成するとアクセストークンを取得できる．
+** References
+*** Ruby
+    Rubyに関する参考サイトのURLや書籍を以下に示す．
+    + (基本) オブジェクト指向スクリプト言語 Ruby リファレンスマニュアル
+      [[http://doc.okkez.net/static/187/doc/index.html]]
+    + (初心者向け) Ruby ではじめるプログラミング
+      [[http://jp.rubyist.net/magazine/?0002-FirstProgramming][http://jp.rubyist.net/magazine/?0002-FirstProgramming]]
+    + (少し深く理解する) プログラミング言語Ruby -ありえるえりあ-
+      [[http://dev.ariel-networks.com/articles/workshop/ruby/][http://dev.ariel-networks.com/articles/workshop/ruby/]]
+    + (書籍) たのしいRuby 第2版
+      + 著者: 高橋征義，後藤裕蔵
+      + 出版社: ソフトバンク クリエイティブ
+    + Sinatraに関する参考サイト
+      + [[http://www.sinatrarb.com/intro-ja.html]]
+*** Slack
+   + Slackに関する参考サイトのURLを以下に示す．
+     + Incoming Webhooksについて
+       + [[https://api.slack.com/incoming-webhooks]]
+     + Outgoing Webhooksについて
+       + [[https://api.slack.com/outgoing-webhooks]]
+     + Slash Commandsについて
+       + [[https://api.slack.com/slash-commands]]
+     + Web APIについて
+       + [[https://api.slack.com/web]]
+       + [[https://api.slack.com/methods]]
+     + Real Time Messaging APIについて
+       + [[https://api.slack.com/rtm]]
+       + [[https://api.slack.com/events]]
+       + [[https://github.com/aki017/slack-ruby-gem]]
