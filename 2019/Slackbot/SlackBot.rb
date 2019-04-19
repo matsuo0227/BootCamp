@@ -8,8 +8,8 @@ class SlackBot
     @config = YAML.load_file(settings_file_path) if File.exist?(settings_file_path)
     # This code assumes to set incoming webhook url as evironment variable in Heroku
     # SlackBot uses settings.yml as config when it serves on local
-    @incoming_webhook = ENV['INCOMING_WEBHOOK_URL'] || config["incoming_webhook_url"]
-    @yahoo_api_key = config["yahoo_api"]
+    @incoming_webhook = ENV['INCOMING_WEBHOOK_URL'] || @config["incoming_webhook_url"]
+    @yahoo_api_key = @config["yahoo_api"]
   end
 
   def post_message(string, options = {})
