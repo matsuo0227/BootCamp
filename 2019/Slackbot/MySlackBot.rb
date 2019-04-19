@@ -8,19 +8,27 @@ require "open-uri"
 
 mention = "@matsubot"
 
-ERROR_CODE = -1
-PAGE_SIZE = 10000
+$ERROR_CODE = -1
+$PAGE_SIZE = 10000
 
-bot_last_char = ""
+$BOT_LAST_CHAR = ""
 
-flag_shiritori = false
-flag_first = false
+$FLAG_SHIRITORI = false
+$FLAG_FIRST = false
+
+help_message = "こんにちは．\nmatsubotです．\n「〇〇と言って」と言われると「〇〇」と返します．\n
+加えてしりとりを行うことができます．\n
+しりとりの細かいルールを説明します．\n
+1.使用可能な文字はひらがな，カタカナ，漢字のみです\n
+2.「ー」は無視します   例：「ルビー」の最後の文字は「ビ」です\n
+3.拗音の小文字は大文字として扱います   例：「バッシュ」の最後の文字は「ユ」です\n\n
+コマンドは以下の通りです．\n
+help:このヘルプメッセージを表示\n
+start:しりとりの開始\n
+end:しりとりの終了\n
+status:しりとり中かそうでないかを表示"
 
 class MySlackBot < SlackBot
-
-end
-
-class WordProcess
     #<string>と言ってをパース
     def parrot(str)
         idx_say = str.rindex("と言って")
@@ -46,7 +54,7 @@ class WordProcess
     #Wikipedia API
     def wiki_dict_api(word)
         enc_word = URI.encode(word)
-        url = "http://public.dejizo.jp/NetDicV09.asmx/SearchDicItemLite?Dic=wpedia&Word=#{enc_word}&Scope=HEADWORD&Match=STARTWITH&Merge=AND&Prof=XHTML&PageSize=#{PAGE_SIZE}&PageIndex=0"
+        url = "http://public.dejizo.jp/NetDicV09.asmx/SearchDicItemLite?Dic=wpedia&Word=#{enc_word}&Scope=HEADWORD&Match=STARTWITH&Merge=AND&Prof=XHTML&PageSize=#{$PAGE_SIZE}&PageIndex=0"
 
         doc = Nokogiri::HTML(open(url)) rescue nil
         title = doc.xpath('///span[@class="NetDicTitle"]').map{|i| i.text} rescue nil
@@ -57,7 +65,7 @@ class WordProcess
     #和英辞典 API
     def e_dict_api(word)
         enc_word = URI.encode(word)
-        url = "http://public.dejizo.jp/NetDicV09.asmx/SearchDicItemLite?Dic=EdictJE&Word=#{enc_word}&Scope=HEADWORD&Match=STARTWITH&Merge=AND&Prof=XHTML&PageSize=#{PAGE_SIZE}&PageIndex=0"
+        url = "http://public.dejizo.jp/NetDicV09.asmx/SearchDicItemLite?Dic=EdictJE&Word=#{enc_word}&Scope=HEADWORD&Match=STARTWITH&Merge=AND&Prof=XHTML&PageSize=#{$PAGE_SIZE}&PageIndex=0"
 
         doc = Nokogiri::XML(open(url)) rescue nil
         id = doc.search("ItemID").map{|i| i.text} rescue nil
@@ -101,24 +109,24 @@ class WordProcess
         word_ruby[0] = word_ruby[0].tr("０-９ａ-ｚＡ-Ｚ","0-9a-zA-Z")
         if word_ruby.include?(nil)
             post_message("使用できない文字が含まれています！", username: "matsubot")
-            return ERROR_CODE
+            return $ERROR_CODE
         elsif word_ruby.include?(nil)
             if word_ruby[0] != nil
                 if word_ruby[0].match(/\w/)
                     post_message("日本語のみで入力してください！", username: "matsubot")
-                    return ERROR_CODE
+                    return $ERROR_CODE
                 else
                     post_message("その文字は認識不可能です！", username: "matsubot")
-                    return ERROR_CODE
+                    return $ERROR_CODE
                 end
             else
                 post_message("文字列が空の可能性があります！", username: "matsubot")
-                return ERROR_CODE
+                return $ERROR_CODE
             end
         else
             if word_ruby[0].gsub(/\W/, "").length != 0
                 post_message("日本語のみで入力してください！", username: "matsubot")
-                return ERROR_CODE
+                return $ERROR_CODE
             else
                 return word_ruby
             end
@@ -194,10 +202,10 @@ class WordProcess
         candidate_word = return_title_fromid(candidate_id)
         if candidate_word.length == 2
             candidate_word = candidate_word[1][/［(.+)］/,1]
-            # p(bot_last_char)
+            # p($BOT_LAST_CHAR)
         else
             candidate_word = candidate_word[0]
-            # p(bot_last_char)
+            # p($BOT_LAST_CHAR)
         end
         candidate_word = put_ruby_api(candidate_word)[1]
         # p(candidate_word)
@@ -207,73 +215,80 @@ class WordProcess
             select_word_fromid(id_list)
         end
     end
+
+    def main(user_word)
+
+        #適切な入力かどうか確認
+        if valid_word(user_word) == $ERROR_CODE
+            return
+        end
+
+        if $FLAG_FIRST
+            $BOT_LAST_CHAR = put_ruby_api(user_word)[1][0]
+            $FLAG_FIRST = false
+        end
+
+        if put_ruby_api(user_word)[1][0] != $BOT_LAST_CHAR
+            post_message("\"#{$BOT_LAST_CHAR}\"から始めてください!", username: "matsubot")
+            return
+        end
+
+        #Wikipediaに存在するか
+        # if exist_on_wiki(user_word) == false
+        #     puts("私の辞書には存在しない単語です")
+        # end
+
+        #入力をひらがなに変換
+        user_word_ruby = put_ruby_api(user_word)
+
+        #入力の最後の文字を取得
+        user_last_char = return_last_char(user_word_ruby[1])
+
+        #「ん」がついたら負け
+        if valid_last_char(user_last_char) == false
+            post_message("結果：あなたの負けです", username: "matsubot")
+            $FLAG_SHIRITORI = false
+            $FLAG_FIRST = false
+            post_message("しりとりを終了します", username: "matsubot")
+            return
+        end
+        # p(last_char)
+
+        #入力の最後の文字から始まる単語を検索
+        id_list, word_list = e_dict_api(user_last_char)
+
+        #IDをランダムで選択し，単語を選択
+        select_id = select_word_fromid(id_list)
+        while is_noun(select_id) == false
+            select_id = select_word_fromid(id_list)
+        end
+        res_word = return_title_fromid(select_id)
+
+        #とりあえず出力
+        if res_word.length == 2
+            post_message("#{res_word[0]}(#{res_word[1][/［(.+)］/,1]})", username: "matsubot")
+            $BOT_LAST_CHAR = return_last_char(res_word[1][/［(.+)］/,1])
+            # p($BOT_LAST_CHAR)
+        else
+            post_message("#{res_word[0]}", username: "matsubot")
+            $BOT_LAST_CHAR = return_last_char(put_ruby_api(res_word[0])[1])
+            # p($BOT_LAST_CHAR)
+        end
+    end
 end
 
-wordprocess = WordProcess.new
-slackbot = MySlackBot.new
-
-def main(user_word)
-
-    #適切な入力かどうか確認
-    if wordprocess.valid_word(user_word) == ERROR_CODE
-        return
+def delete_space(str)
+    if str[0] == " "
+        str[0] = ""
+        delete_space(str)
     end
-
-    if flag_first
-        bot_last_char = wordprocess.put_ruby_api(user_word)[1][0]
-        flag_first = false
-    end
-
-    if wordprocess.put_ruby_api(user_word)[1][0] != bot_last_char
-        slackbot.post_message("\"#{bot_last_char}\"から始めてください!", username: "matsubot")
-        return
-    end
-
-    #Wikipediaに存在するか
-    # if exist_on_wiki(user_word) == false
-    #     puts("私の辞書には存在しない単語です")
-    # end
-
-    #入力をひらがなに変換
-    user_word_ruby = wordprocess.put_ruby_api(user_word)
-
-    #入力の最後の文字を取得
-    user_last_char = wordprocess.return_last_char(user_word_ruby[1])
-
-    #「ん」がついたら負け
-    if wordprocess.valid_last_char(user_last_char) == false
-        slackbot.post_message("あなたの負けです", username: "matsubot")
-        return
-    end
-    # p(last_char)
-
-    #入力の最後の文字から始まる単語を検索
-    id_list, word_list = wordprocess.e_dict_api(user_last_char)
-
-    #IDをランダムで選択し，単語を選択
-    select_id = wordprocess.elect_word_fromid(id_list)
-    while wordprocess.is_noun(select_id) == false
-        select_id = wordprocess.elect_word_fromid(id_list)
-    end
-    res_word = wordprocess.return_title_fromid(select_id)
-
-    #とりあえず出力
-    if res_word.length == 2
-        slackbot.post_message("bot:#{res_word[0]}(#{res_word[1][/［(.+)］/,1]})", username: "matsubot")
-        bot_last_char = wordprocess.return_last_char(res_word[1][/［(.+)］/,1])
-        # p(bot_last_char)
-    else
-        slackbot.post_message("bot:#{res_word[0]}", username: "matsubot")
-        bot_last_char = wordprocess.return_last_char(put_ruby_api(res_word[0])[1])
-        # p(bot_last_char)
-    end
+    return str
 end
-
-
-
 
 
 set :environment, :production
+
+slackbot = MySlackBot.new
 
 get '/' do
   "SlackBot Server"
@@ -284,27 +299,34 @@ post '/slack' do
     str = params[:text]
     if str.start_with?(mention)
         user_text = str.slice(mention.length..-1)
-        if user_text[0] == " "
-            user_text[0] = ""
+        user_text = delete_space(user_text)
+        if user_text[-1] == "\n"
+            user_text[-1] = ""
         end
-        slackbot.post_message(user_text, username: "matsubot")
+        # slackbot.post_message(user_text.length.to_s, username: "matsubot")
         if str.include?("と言って")
-            params[:text] = wordprocess.parrot(user_text)
+            params[:text] = slackbot.parrot(user_text)
             slackbot.post_message(params[:text], username: "matsubot")
         else
-            if  (flag_shiritori == true) and (user_text == "end")
-                flag_shiritori = false
+            if user_text == "status"
+                if $FLAG_SHIRITORI == true
+                    slackbot.post_message("現在しりとりの途中です．初めの文字は\"#{$BOT_LAST_CHAR}\"です．", username: "matsubot")
+                else
+                    slackbot.post_message("現在しりとりは行なっていません．", username: "matsubot")
+                end
+            elsif user_text == "help"
+                slackbot.post_message(help_message, username: "matsubot")
+            elsif ($FLAG_SHIRITORI == true) and (user_text == "end")
+                $FLAG_SHIRITORI = false
                 slackbot.post_message("しりとりを終了します", username: "matsubot")
-            end
-
-            if flag_shiritori == true
-                main(text)
-            end
-
-            if user_text == "start"
-                flag_shiritori = true
-                slackbot.post_message("しりとりを開始します", username: "matsubot")
-                flag_first = true
+            elsif $FLAG_SHIRITORI == true
+                slackbot.main(user_text)
+            elsif user_text == "start"
+                $FLAG_SHIRITORI = true
+                slackbot.post_message("しりとりを開始します．\n入力を行ってください．", username: "matsubot")
+                $FLAG_FIRST = true
+            else
+                slackbot.post_message(help_message, username: "matsubot")
             end
         end
     end
