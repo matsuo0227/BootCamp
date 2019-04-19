@@ -25,8 +25,10 @@ post '/slack' do
     content_type :json
     str = params[:text]
     if str.start_with?(mention)
-        instruction = str.slice(mention.length..-1)
-        params[:text] = slackbot.parrot(instruction)
-        slackbot.post_message(params[:text], username: "Matsubot")
+        if str.include?("と言って")
+            instruction = str.slice(mention.length..-1)
+            params[:text] = slackbot.parrot(instruction)
+            slackbot.post_message(params[:text], username: "matsubot")
+        end
     end
 end
