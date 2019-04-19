@@ -287,6 +287,7 @@ post '/slack' do
         if user_text[0] == " "
             user_text[0] = ""
         end
+        slackbot.post_message(user_text, username: "matsubot")
         if str.include?("と言って")
             params[:text] = wordprocess.parrot(user_text)
             slackbot.post_message(params[:text], username: "matsubot")
