@@ -294,6 +294,7 @@ post '/slack' do
             if  (flag_shiritori == true) and (user_text == "end")
                 flag_shiritori = false
                 slackbot.post_message("しりとりを終了します", username: "matsubot")
+            end
 
             if flag_shiritori == true
                 main(text)
@@ -304,12 +305,6 @@ post '/slack' do
                 slackbot.post_message("しりとりを開始します", username: "matsubot")
                 flag_first = true
             end
-
-
-            # word = str.slice(mention.length..-1)
-            # params[:text] = slackbot.valid_word(word)[1]
-            # slackbot.post_message(params[:text], username: "matsubot")
-            # main()
         end
     end
 end
