@@ -286,7 +286,7 @@ post '/slack' do
             user_text[0] = ""
         end
         if str.include?("と言って")
-            params[:text] = slackbot.parrot(text)
+            params[:text] = slackbot.parrot(user_text)
             slackbot.post_message(params[:text], username: "matsubot")
         else
             if str.slice(mention.length..-1) == start
