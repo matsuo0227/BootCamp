@@ -300,9 +300,6 @@ post '/slack' do
     if str.start_with?(mention)
         user_text = str.slice(mention.length..-1)
         user_text = delete_space(user_text)
-        if user_text[-1] == "\n"
-            user_text[-1] = ""
-        end
         # slackbot.post_message(user_text.length.to_s, username: "matsubot")
         if str.include?("と言って")
             params[:text] = slackbot.parrot(user_text)
