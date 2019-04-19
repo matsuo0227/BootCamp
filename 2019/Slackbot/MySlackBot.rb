@@ -92,8 +92,8 @@ class MySlackBot < SlackBot
         if word_ruby.include?(nil)
             post_message("使用できない文字が含まれています！", username: "matsubot")
             return ERROR_CODE
-        elsif word_ruby.include?("")
-            if word_ruby[0] != ""
+        elsif word_ruby.include?(nil)
+            if word_ruby[0] != nil
                 if word_ruby[0].match(/\w/)
                     post_message("日本語のみで入力してください！", username: "matsubot")
                     return ERROR_CODE
@@ -284,7 +284,7 @@ post '/slack' do
             slackbot.post_message(params[:text], username: "matsubot")
         else
             word = str.slice(mention.length..-1)
-            params[:text] = slackbot.put_ruby_api(word)[1]
+            params[:text] = slackbot.valid_word(word)[1]
             slackbot.post_message(params[:text], username: "matsubot")
             # main()
         end
