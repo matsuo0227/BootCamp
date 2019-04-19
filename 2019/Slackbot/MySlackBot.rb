@@ -9,8 +9,17 @@ require "open-uri"
 mention = "@matsubot"
 
 ERROR_CODE = -1
+LOSE = -2
+
+bot_last_char = ""
+
+flag_shiritori = false
 
 class MySlackBot < SlackBot
+
+end
+
+class WordProcess
     #<string>と言ってをパース
     def parrot(str)
         idx_say = str.rindex("と言って")
@@ -197,76 +206,70 @@ class MySlackBot < SlackBot
             select_word_fromid(id_list)
         end
     end
-
-    # def main()
-    #     first_flag = true
-    #     bot_last_char = ""
-    #     #入力
-    #     user_word = gets.chomp
-    #
-    #     #適切な入力があるまでループ
-    #     if valid_word(user_word) == ERROR_CODE
-    #         user_word = gets.chomp
-    #     end
-    #
-    #     if first_flag
-    #         bot_last_char = put_ruby_api(user_word)[1][0]
-    #         # p bot_last_char
-    #         first_flag = false
-    #     end
-    #
-    #     while(put_ruby_api(user_word)[1][0] != bot_last_char)
-    #         # p put_ruby_api(user_word)[1][0]
-    #         # p bot_last_char
-    #         puts("\"#{bot_last_char}\"から始めてください!")
-    #         print("input word:")
-    #         user_word = gets.chomp
-    #     end
-    #
-    #     #Wikipediaに存在するか
-    #     if exist_on_wiki(user_word) == false
-    #         puts("私の辞書には存在しない単語です")
-    #         # user_word_exit = gets
-    #     end
-    #
-    #     #入力をひらがなに変換
-    #     user_word_ruby = put_ruby_api(user_word)
-    #     # p(word_ruby)
-    #
-    #     #入力の最後の文字を取得
-    #     user_last_char = return_last_char(user_word_ruby[1])
-    #
-    #     #「ん」がついたら負け
-    #     if valid_last_char(user_last_char) == false
-    #         p("あなたの負けです")
-    #         break
-    #     end
-    #     # p(last_char)
-    #
-    #     #入力の最後の文字から始まる単語を検索
-    #     id_list, word_list = e_dict_api(user_last_char)
-    #
-    #     #IDをランダムで選択し，単語を選択
-    #     select_id = select_word_fromid(id_list)
-    #     while is_noun(select_id) == false
-    #         select_id = select_word_fromid(id_list)
-    #     end
-    #     res_word = return_title_fromid(select_id)
-    #     # p(res_word)
-    #     #とりあえず出力
-    #     if res_word.length == 2
-    #         puts("bot:#{res_word[0]}(#{res_word[1][/［(.+)］/,1]})")
-    #         bot_last_char = return_last_char(res_word[1][/［(.+)］/,1])
-    #         # p(bot_last_char)
-    #     else
-    #         puts("bot:#{res_word[0]}")
-    #         bot_last_char = return_last_char(put_ruby_api(res_word[0])[1])
-    #         # p(bot_last_char)
-    #     end
-    # end
 end
 
+wordprocess = WordProcess.new
 slackbot = MySlackBot.new
+
+def main(user_word, first_flag = false)
+
+    #適切な入力かどうか確認
+    if wordprocess.valid_word(user_word) == ERROR_CODE
+        return ERROR_CODE
+    end
+
+    if first_flag
+        bot_last_char = wordprocess.put_ruby_api(user_word)[1][0]
+    end
+
+    if wordprocess.put_ruby_api(user_word)[1][0] != bot_last_char
+        slackbot.post_message("\"#{bot_last_char}\"から始めてください!", username: "matsubot")
+        return ERROR_CODE
+    end
+
+    #Wikipediaに存在するか
+    # if exist_on_wiki(user_word) == false
+    #     puts("私の辞書には存在しない単語です")
+    # end
+
+    #入力をひらがなに変換
+    user_word_ruby = wordprocess.put_ruby_api(user_word)
+
+    #入力の最後の文字を取得
+    user_last_char = wordprocess.return_last_char(user_word_ruby[1])
+
+    #「ん」がついたら負け
+    if wordprocess.valid_last_char(user_last_char) == false
+        slackbot.post_message("あなたの負けです", username: "matsubot")
+        return LOSE
+    end
+    # p(last_char)
+
+    #入力の最後の文字から始まる単語を検索
+    id_list, word_list = wordprocess.e_dict_api(user_last_char)
+
+    #IDをランダムで選択し，単語を選択
+    select_id = wordprocess.elect_word_fromid(id_list)
+    while wordprocess.is_noun(select_id) == false
+        select_id = wordprocess.elect_word_fromid(id_list)
+    end
+    res_word = wordprocess.return_title_fromid(select_id)
+
+    #とりあえず出力
+    if res_word.length == 2
+        slackbot.post_message("bot:#{res_word[0]}(#{res_word[1][/［(.+)］/,1]})", username: "matsubot")
+        bot_last_char = wordprocess.return_last_char(res_word[1][/［(.+)］/,1])
+        # p(bot_last_char)
+    else
+        slackbot.post_message("bot:#{res_word[0]}", username: "matsubot")
+        bot_last_char = wordprocess.return_last_char(put_ruby_api(res_word[0])[1])
+        # p(bot_last_char)
+    end
+end
+
+
+
+
 
 set :environment, :production
 
@@ -278,14 +281,19 @@ post '/slack' do
     content_type :json
     str = params[:text]
     if str.start_with?(mention)
+        user_text = str.slice(mention.length..-1)
+        if user_text[0] == " "
+            user_text[0] = ""
+        end
         if str.include?("と言って")
-            instruction = str.slice(mention.length..-1)
-            params[:text] = slackbot.parrot(instruction)
+            params[:text] = slackbot.parrot(text)
             slackbot.post_message(params[:text], username: "matsubot")
         else
-            word = str.slice(mention.length..-1)
-            params[:text] = slackbot.valid_word(word)[1]
-            slackbot.post_message(params[:text], username: "matsubot")
+            if str.slice(mention.length..-1) == start
+            end
+            # word = str.slice(mention.length..-1)
+            # params[:text] = slackbot.valid_word(word)[1]
+            # slackbot.post_message(params[:text], username: "matsubot")
             # main()
         end
     end
