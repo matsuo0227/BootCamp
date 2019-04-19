@@ -9,11 +9,12 @@ require "open-uri"
 mention = "@matsubot"
 
 ERROR_CODE = -1
-LOSE = -2
+PAGE_SIZE = 10000
 
 bot_last_char = ""
 
 flag_shiritori = false
+flag_first = false
 
 class MySlackBot < SlackBot
 
@@ -211,20 +212,21 @@ end
 wordprocess = WordProcess.new
 slackbot = MySlackBot.new
 
-def main(user_word, first_flag = false)
+def main(user_word)
 
     #適切な入力かどうか確認
     if wordprocess.valid_word(user_word) == ERROR_CODE
-        return ERROR_CODE
+        return
     end
 
-    if first_flag
+    if flag_first
         bot_last_char = wordprocess.put_ruby_api(user_word)[1][0]
+        flag_first = false
     end
 
     if wordprocess.put_ruby_api(user_word)[1][0] != bot_last_char
         slackbot.post_message("\"#{bot_last_char}\"から始めてください!", username: "matsubot")
-        return ERROR_CODE
+        return
     end
 
     #Wikipediaに存在するか
@@ -241,7 +243,7 @@ def main(user_word, first_flag = false)
     #「ん」がついたら負け
     if wordprocess.valid_last_char(user_last_char) == false
         slackbot.post_message("あなたの負けです", username: "matsubot")
-        return LOSE
+        return
     end
     # p(last_char)
 
@@ -289,8 +291,21 @@ post '/slack' do
             params[:text] = wordprocess.parrot(user_text)
             slackbot.post_message(params[:text], username: "matsubot")
         else
-            if str.slice(mention.length..-1) == start
+            if  (flag_shiritori == true) and (user_text == "end")
+                flag_shiritori = false
+                slackbot.post_message("しりとりを終了します", username: "matsubot")
+
+            if flag_shiritori == true
+                main(text)
             end
+
+            if user_text == "start"
+                flag_shiritori = true
+                slackbot.post_message("しりとりを開始します", username: "matsubot")
+                flag_first = true
+            end
+
+
             # word = str.slice(mention.length..-1)
             # params[:text] = slackbot.valid_word(word)[1]
             # slackbot.post_message(params[:text], username: "matsubot")
