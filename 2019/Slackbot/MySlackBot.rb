@@ -109,11 +109,11 @@ class MySlackBot < SlackBot
     def valid_word(word)
         word_ruby =  put_ruby_api(word)
         word_ruby[0] = word_ruby[0].tr("０-９ａ-ｚＡ-Ｚ","0-9a-zA-Z")
-        if word_ruby.include?(nil)
+        if word_ruby.include?("")
             post_message("使用できない文字が含まれています！", username: "matsubot")
             return $ERROR_CODE
-        elsif word_ruby.include?(nil)
-            if word_ruby[0] != nil
+        elsif word_ruby.include?("")
+            if word_ruby[0] != ""
                 if word_ruby[0].match(/\w/)
                     post_message("日本語のみで入力してください！", username: "matsubot")
                     return $ERROR_CODE
