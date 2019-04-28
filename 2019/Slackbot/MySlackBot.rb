@@ -250,6 +250,7 @@ class MySlackBot < SlackBot
             $FLAG_SHIRITORI = false
             $FLAG_FIRST = false
             post_message("しりとりを終了します", username: "matsubot")
+            $BOT_LAST_CHAR = ""
             return
         end
         # p(last_char)
@@ -307,7 +308,11 @@ post '/slack' do
         else
             if user_text == "status"
                 if $FLAG_SHIRITORI == true
-                    slackbot.post_message("現在しりとりの途中です．初めの文字は\"#{$BOT_LAST_CHAR}\"です．", username: "matsubot")
+                    if $BOT_LAST_CHAR == ""
+                        slackbot.post_message("現在しりとりの途中です．最初のターンです．", username: "matsubot")
+                    else
+                        slackbot.post_message("現在しりとりの途中です．初めの文字は\"#{$BOT_LAST_CHAR}\"です．", username: "matsubot")
+                    end
                 else
                     slackbot.post_message("現在しりとりは行なっていません．", username: "matsubot")
                 end
@@ -316,6 +321,7 @@ post '/slack' do
             elsif ($FLAG_SHIRITORI == true) and (user_text == "end")
                 $FLAG_SHIRITORI = false
                 slackbot.post_message("しりとりを終了します", username: "matsubot")
+                $BOT_LAST_CHAR = ""
             elsif $FLAG_SHIRITORI == true
                 slackbot.main(user_text)
             elsif user_text == "start"
