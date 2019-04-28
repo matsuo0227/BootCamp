@@ -31,7 +31,7 @@ end:しりとりの終了\n
 status:しりとり中かそうでないかを表示"
 
 class MySlackBot < SlackBot
-    #<string>と言ってをパース
+    #<string>と言っての<string>を返す
     def parrot(str)
         idx_say = str.rindex("と言って")
         return str.slice(0..(idx_say - 1))
@@ -40,7 +40,6 @@ class MySlackBot < SlackBot
     #Yahoo ルビ振り API
     def put_ruby_api(word)
         return "" if word.size >= 1000
-        # p("@yapi:word = #{word}")
         enc_word = URI.encode(word)
         url = "http://jlp.yahooapis.jp/FuriganaService/V1/furigana?appid=#{@yahoo_api_key}&sentence=#{enc_word}"
 
@@ -72,8 +71,6 @@ class MySlackBot < SlackBot
         doc = Nokogiri::XML(open(url)) rescue nil
         id = doc.search("ItemID").map{|i| i.text} rescue nil
         title = doc.xpath('//span[@class="NetDicTitle"]').map{|i| i.text} rescue nil
-        # p(id)
-        # p(title)
         return id, title
     end
 
@@ -81,12 +78,9 @@ class MySlackBot < SlackBot
     def is_noun(dict_id)
         url = "http://public.dejizo.jp/NetDicV09.asmx/GetDicItemLite?Dic=EdictJE&Item=#{dict_id}&Loc=&Prof=XHTML"
 
-        # p url
         doc = Nokogiri::XML(open(url)) rescue nil
         mean = doc.xpath('//div[@class="NetDicBody"]/div/div[1]').map{|i| i.text} rescue nil
-        # p(mean)
         kind = mean[0][/\((.+?)\) /,1]
-        # p(kind)
         if kind.match(/(^n(,(.+))*)$|(^((.+))*,n(,(.+))*$)|(^((.+))*,n$)/)
             return true
         else
@@ -98,10 +92,8 @@ class MySlackBot < SlackBot
     def return_title_fromid(dict_id)
         url = "http://public.dejizo.jp/NetDicV09.asmx/GetDicItemLite?Dic=EdictJE&Item=#{dict_id}&Loc=&Prof=XHTML"
 
-        # p url
         doc = Nokogiri::XML(open(url)) rescue nil
         title = doc.xpath('//span[@class="NetDicHeadTitle"]').map{|i| i.text}
-        # return title[0][/［(.+)］/,1]
         return title[0].split(/\n\t*/)
     end
 
@@ -204,13 +196,10 @@ class MySlackBot < SlackBot
         candidate_word = return_title_fromid(candidate_id)
         if candidate_word.length == 2
             candidate_word = candidate_word[1][/［(.+)］/,1]
-            # p($BOT_LAST_CHAR)
         else
             candidate_word = candidate_word[0]
-            # p($BOT_LAST_CHAR)
         end
         candidate_word = put_ruby_api(candidate_word)[1]
-        # p(candidate_word)
         if valid_last_char(candidate_word)
             return candidate_id
         else
@@ -255,7 +244,6 @@ class MySlackBot < SlackBot
             $BOT_LAST_CHAR = ""
             return
         end
-        # p(last_char)
 
         #入力の最後の文字から始まる単語を検索
         id_list, word_list = e_dict_api(user_last_char)
@@ -271,11 +259,9 @@ class MySlackBot < SlackBot
         if res_word.length == 2
             post_message("#{res_word[0]}(#{res_word[1][/［(.+)］/,1]})", username: "matsubot")
             $BOT_LAST_CHAR = return_last_char(res_word[1][/［(.+)］/,1])
-            # p($BOT_LAST_CHAR)
         else
             post_message("#{res_word[0]}", username: "matsubot")
             $BOT_LAST_CHAR = return_last_char(put_ruby_api(res_word[0])[1])
-            # p($BOT_LAST_CHAR)
         end
     end
 end
@@ -303,7 +289,6 @@ post '/slack' do
     if str.start_with?(mention)
         user_text = str.slice(mention.length..-1)
         user_text = delete_space(user_text)
-        # slackbot.post_message(user_text.length.to_s, username: "matsubot")
         if str.include?("と言って")
             params[:text] = slackbot.parrot(user_text)
             slackbot.post_message(params[:text], username: "matsubot")
