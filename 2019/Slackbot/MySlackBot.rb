@@ -320,18 +320,30 @@ post '/slack' do
                 end
             elsif user_text == "help"
                 slackbot.post_message(help_message, username: "matsubot")
-            elsif ($FLAG_SHIRITORI == true) and (user_text == "end")
-                $FLAG_SHIRITORI = false
-                slackbot.post_message("しりとりを終了します", username: "matsubot")
-                $BOT_LAST_CHAR = ""
+            elsif user_text == "end"
+                if $FLAG_SHIRITORI == true
+                    $FLAG_SHIRITORI = false
+                    slackbot.post_message("しりとりを終了します", username: "matsubot")
+                    $BOT_LAST_CHAR = ""
+                else
+                    slackbot.post_message("現在しりとりは行なっていません．\n@matsubot startで開始してください．", username: "matsubot")
+                end
+            elsif user_text == "start"
+                if $FLAG_SHIRITORI == false
+                    $FLAG_SHIRITORI = true
+                    slackbot.post_message("しりとりを開始します．\n入力を行ってください．", username: "matsubot")
+                    $FLAG_FIRST = true
+                else
+                    if $BOT_LAST_CHAR == ""
+                        slackbot.post_message("現在しりとりの途中です．最初のターンです．", username: "matsubot")
+                    else
+                        slackbot.post_message("現在しりとりの途中です．初めの文字は\"#{$BOT_LAST_CHAR}\"です．", username: "matsubot")
+                    end
+                end
             elsif $FLAG_SHIRITORI == true
                 slackbot.main(user_text)
-            elsif user_text == "start"
-                $FLAG_SHIRITORI = true
-                slackbot.post_message("しりとりを開始します．\n入力を行ってください．", username: "matsubot")
-                $FLAG_FIRST = true
             else
-                slackbot.post_message(help_message, username: "matsubot")
+                slackbot.post_message("登録されていないコマンドです．\n@matsubot helpでヘルプメッセージを表示します．", username: "matsubot")
             end
         end
     end
