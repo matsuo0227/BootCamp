@@ -1,0 +1,352 @@
+\documentclass[12pt]{jsarticle}
+\usepackage[dvipdfmx]{graphicx}
+\textheight = 25truecm
+\textwidth = 18truecm
+\topmargin = -1.5truecm
+\oddsidemargin = -1truecm
+\evensidemargin = -1truecm
+\marginparwidth = -1truecm
+
+\def\theenumii{\Alph{enumii}}
+\def\theenumiii{\alph{enumiii}}
+\def\labelenumi{(\theenumi)}
+\def\labelenumiii{(\theenumiii)}
+\def\theenumiv{\roman{enumiv}}
+\def\labelenumiv{(\theenumiv)}
+\usepackage{comment}
+\usepackage{url}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% sty/ にある研究室独自のスタイルファイル
+\usepackage{jtygm}  % フォントに関する余計な警告を消す
+\usepackage{nutils} % insertfigure, figref, tabref マクロ
+
+
+
+\def\figdir{./figs} % 図のディレクトリ
+\def\figext{pdf}    % 図のファイルの拡張子
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 表題
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{center}
+{\LARGE SlackBotプログラムの仕様書}
+\end{center}
+
+\begin{flushright}
+  2019/4/26\\
+  松尾 和樹
+\end{flushright}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 概要
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{はじめに}
+\label{sec:introduction}
+本資料は，2019 年度 B4 新人研修課題で作成した SlackBot プログラムの仕様についてまとめたものである．
+本プログラムで使用するSlack\cite{slack}とは，チャットツールである．SlackBotとは，Slackのチャンネルに自動で投稿を行ったり，
+設定された契機となる単語によってユーザへの返信を自動で行ったりするものである．
+本プログラムは以下の2つの機能を持つ．
+\begin{enumerate}
+\item ユーザから指定された文字列を投稿する機能
+\item ユーザとしりとりを行う機能
+\end{enumerate}
+本資料において，投稿内容は引用符``''で囲って示す．
+
+
+\section{対象となる利用者}\label{sec:target}
+本プログラムは，以下の2つのアカウントを所有する利用者を対象としている．
+
+\begin{enumerate}
+    \item Slackアカウント
+    \item Yahoo! JAPAN ID
+\end{enumerate}
+
+Yahoo! JAPAN IDはAPIキーの取得に使用する．
+
+\section{SlackBotプログラムの処理の流れ}
+SlackBotプログラムの処理の流れを\figref{fig:process}に示す．
+\insertfigure[0.8]{fig:process}{fig1}{SlackBotプログラムの処理の流れ}
+
+\figref{fig:process} 中の(1)から(7)の処理を以下に示す．
+\begin{enumerate}
+\item ユーザからSlackサーバに投稿する
+\item Slackサーバは，ユーザからの投稿を契機にSlackBotサーバにPOSTする
+\item SlackBotサーバはSlackサーバからのPOSTを処理する
+\item SlackBotサーバはAPIにリクエストを送信する
+\item リクエストを受け取ったAPIはSlackBotサーバにレスポンスを返却する
+\item SlackBotサーバはAPIから受け取ったレスポンスを処理する
+\item SlackBotサーバからSlackサーバへ投稿する
+\item Slackサーバは，ユーザにSlackBotサーバからの投稿内容を表示する
+\end{enumerate}
+
+\section{機能}\label{sec:function}
+\subsection{概要}
+本プログラムは，Slackでの``@matsubot''から始まる投稿を受信し，この投稿に対して返信を行う．
+返信内容は``@matsubot''に続く文字列によって決定される．
+
+\subsection{コマンドの説明}
+本プログラムに実装されているコマンド一覧を\tabref{tab:command}に示す．コマンドは``\verb|@matsubot <command>|''のように使用する．
+\verb|<command>|は\tabref{tab:command}に示すコマンドを指定する．
+各コマンドについて以下で説明する．
+\begin{enumerate}
+\item startコマンド\\
+startコマンドは以下のメッセージを投稿し，しりとりを開始した状態へ遷移する．
+\begin{verbatim}
+しりとりを開始します．
+入力を行ってください．
+\end{verbatim}
+\item endコマンド\\
+endコマンドは以下のメッセージとともに，しりとりを終了した状態へ遷移する．
+\begin{verbatim}
+しりとりを終了します．
+\end{verbatim}
+\item statusコマンド\\
+statusコマンドはしりとり中か否かを表示する．
+しりとり中であれば以下のように投稿する．\\
+\verb|現在しりとりの途中です．初めの文字は"（文字）"です．|\\
+初めの文字とはユーザが投稿するべき単語の初めの文字である．
+たとえば，SlackBotが直前に投稿した単語の最後の文字が「あ」であれば以下のように投稿する．\\
+\verb|現在しりとりの途中です．初めの文字は"あ"です．|\\
+また，しりとり中でなければ以下のように投稿する．\\
+\verb|現在しりとりは行なっていません．|\\
+\item helpコマンド\\
+helpコマンドはヘルプメッセージを表示する．
+投稿するヘルプメッセージの内容を以下に示す．
+\begin{verbatim}
+こんにちは．
+matsubotです．
+機能の説明をします．
+1.「〇〇と言って」と言われると「〇〇」と返します．
+2.しりとりを行うことができます．しりとりの細かいルールを説明します．
+(1)使用可能な文字はひらがな，カタカナ，漢字のみです
+(2)「ー」は無視します   例：「ルビー」の最後の文字は「ビ」です
+(3)拗音の小文字は大文字として扱います   例：「バッシュ」の最後の文字は「ユ」です
+
+コマンドは以下の通りです．
+help:このヘルプメッセージを表示
+start:しりとりの開始
+end:しりとりの終了
+status:しりとり中かそうでないかを表示
+\end{verbatim}
+\end{enumerate}
+
+\subsection{機能の説明}
+以下で本プログラムが持つ2つの機能を述べる．
+\begin{description}
+    \item[(機能1)] ユーザから指定された文字列を投稿する機能\\
+        ユーザの``@matsubot （文字列）と言って''という投稿に対して（文字列）の部分を返信する．
+        たとえば，``@matsubot こんにちはと言って''という投稿に対しては``こんにちは''という文字列を返信する．
+    \item[(機能2)] ユーザとしりとりを行う機能\\
+        ユーザは``@matsubot （単語）''のように投稿する．SlackBotはユーザから受け取った単語の最後の文字から始まる単語を返信する．しりとりの処理の手順を以下に示す．ただし，``@matsubot start''と投稿し，しりとりを開始している状態とする．
+        \begin{enumerate}
+        \item SlackBotは受け取った単語をYahoo! JAPANのルビ振りAPI\cite{yahoo_api}を用いてひらがなへ変換する
+        \item 変換後の文字列の最後の文字から始まる単語のリストをデ辞蔵Webサービス REST版API\cite{dict_api}の検索メソッドを使用して取得する\\
+        デ辞蔵Webサービス REST版APIの辞書にはEdict和英辞典を指定する．
+        \item 取得した単語のリストからランダムで1件選択する\label{enum:select word}
+        \item 選択した単語をデ辞蔵Webサービス REST版APIの内容取得メソッドにより単語の品詞と英訳を取得する
+        \item 単語の品詞が名詞であれば，その単語をユーザへ返信する\\
+        名詞でない場合は，(\ref{enum:select word})から再度行う．
+        \end{enumerate}
+\end{description}
+上記の（機能1）と（機能2）どちらにも当てはまるメッセージを受信した場合は（機能1）が優先される．
+
+また，上記の（機能1）と（機能2）どちらの条件にも当てはまらないメッセージを受信した場合，SlackBotは以下のように投稿する．
+
+\begin{verbatim}
+登録されていないコマンドです．
+@matsubot helpでヘルプメッセージを表示します．
+\end{verbatim}
+
+\begin{table}
+  \begin{center}
+    \caption{SlackBot プログラムのコマンド一覧}\label{tab:command}
+    \ecaption{Heroku environment}
+    \begin{tabular}{l|l}
+      \hline
+      \hline
+      コマンド名 & 説明\\
+      \hline
+      start & しりとりを開始する．\\
+      end & しりとりを終了する．\\
+      status & しりとり中か否かを表示する．\\
+      help & ヘルプメッセージを表示する．\\
+      \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+
+
+\section{動作環境}\label{sec:environment}
+本プログラムはHeroku上で動作する．Herokuとは，PaaSで，アプリケーションを実行するためのプラットフォームである．
+Herokuの環境を\tabref{tab:environment}に示す．
+
+\begin{table}
+  \begin{center}
+    \caption{動作環境（Heroku）}\label{tab:environment}
+    \ecaption{Heroku environment}
+    \begin{tabular}{l|l}
+      \hline
+      \hline
+      項目 & 内容\\
+      \hline
+      OS & Ubuntu 18.04.2 LTS (Bionic Beaver)\\
+      CPU & Intel(R) Xeon(R) CPU E5-2670 v2 @ 2.50GHz\\
+      メモリ & 512MB\\
+      Ruby & 2.5.3p105\\
+      Gem & bundler 1.16.1\\
+          & mini\_portile2 2.4.0\\
+          & mustermann 1.0.3\\
+          & nokogiri 1.6\\
+          & rack 2.0.7\\
+          & rack-protection 2.0.5\\
+          & sinatra 2.0.1\\
+          & tilt 2.0.9\\
+      \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+\section{環境構築}\label{sec:make environment}
+\subsection{概要}\label{subsec:abst environment}
+本プログラムの動作のために必要な環境構築の項目を以下に示す．
+\begin{enumerate}
+\item Yahoo! JAPAN WebサービスのアプリケーションID発行
+\item Incoming Webhookの設定
+\item Outgoing Webhookの設定
+\item Herokuの設定
+\end{enumerate}
+
+
+次節で各項目の具体的な手順を述べる．
+
+\subsection{具体的な手順}\label{subsec:setting environment}
+\subsubsection{Yahoo! JAPAN WebサービスのアプリケーションID発行}\label{subsec:get application ID}
+Yahoo! JAPAN デベロッパーネットワーク\cite{yahoo_dev}のWeb APIを利用するにはアプリケーションIDの発行が必須である．
+以下の手順でアプリケーションIDを発行する．
+\begin{enumerate}
+\item 以下のURLにアクセスし，アプリケーションの登録を行う．
+\begin{verbatim}
+https://e.developer.yahoo.co.jp/register
+\end{verbatim}
+\item アプリケーションの登録後，アプリケーションIDが表示される．\label{enum:get key}
+\end{enumerate}
+
+\subsubsection{Incoming Webhookの設定}\label{subsubsec:setting Incoming Webhook}
+Incoming Webhookの設定を行う．Incoming Webhookとは，外部サービスから指定したSlackのチャンネルにメッセージを投稿する機能である．
+以下に設定手順を示す．
+\begin{enumerate}\label{enum:setting Incoming Webhook}
+\item Slackにログインした状態で以下のURLにアクセスする．\\
+\verb|https://<team_name>.slack.com/apps/manage/custom-integrations|\\
+ここで，\verb|<team_name>|は自分の所属するワークスペースに変更する．
+ワークスペースとは，他のメンバとコミュニケーションをとり業務を行うための共有スペースである．
+\item 「Incoming Webhook」をクリックする．
+\item 「設定を追加」から，新たなIncoming Webhookを追加する．
+\item 「チャンネルへの投稿」の項目からメッセージを送信するチャンネルを選択する．
+\item 「設定を保存する」をクリックし，Webhook URLを取得する．\label{enum:get Webhook URL}
+\end{enumerate}
+
+\subsubsection{Outgoing Webhookの設定}\label{subsubsec:setting Outgoing Webhook}
+Outgoing Webhookの設定を行う．Outgoing Webhookとは指定されたチャンネルに指定された条件の投稿が行われた際に事前に設定したURLにリクエストをPOSTする機能である．
+以下に設定手順を示す．
+\begin{enumerate}
+\item Slackにログインした状態で以下のURLにアクセスする．\\
+\verb|https://<team_name>.slack.com/apps/manage/custom-integrations|\\
+ここで，\verb|<team_name>|は自分の所属するワークスペースに変更する．
+\item 「Outgoing Webhook」をクリックする．
+\item 「設定を追加」から，新たなOutgoing Webhookを追加する．
+\item Outgoing Webhookの設定を行う．設定する項目を\tabref{tab:setting Outgoing Webhook}に示す．
+本プログラムでは，引き金となる言葉は``@matsubot''，URLはHerokuで作成したアプリケーションのURLである．
+\end{enumerate}
+
+\begin{table}
+  \begin{center}
+    \caption{Outgoing Webhookの設定項目}\label{tab:setting Outgoing Webhook}
+    \ecaption{}
+    \begin{tabular}{l|l}
+      \hline
+      \hline
+      項目 & 内容\\
+      \hline
+      チャンネル & 投稿を監視するchannel\\
+      引き金となる言葉 & Webhookが動作する契機となる単語\\
+      URL & Webhookが動作した際にPOSTを行うURL\\
+      \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+\subsubsection{Herokuの設定}\label{subsubsec:setting Heroku}
+Herokuの設定を行う．
+以下にHerokuの設定手順を示す．
+\begin{enumerate}
+\item \verb|https://www.heroku.com/|へアクセスし，「Sign up」から新しいアカウントを登録する．
+\item 登録したアカウントでログインし，「Getting Started on Heroku」の使用する言語としてRubyを選択する．
+\item 「I’m ready to start」をクリックする．「Download the Heroku CLI for…」からOSを選択し，Heroku CLIをダウンロードする．
+\item ターミナルで以下のコマンドを実行し，Heroku CLIがインストールされたことを確認する．
+\begin{verbatim}
+$ heroku version
+\end{verbatim}
+インストールが成功していれば，例として以下のような出力が得られる．
+\begin{verbatim}
+heroku/7.22.9 darwin-x64 node-v11.10.1
+\end{verbatim}
+\item 以下のコマンドを実行し，Herokuにログインする．
+\begin{verbatim}
+$ heroku login
+\end{verbatim}
+\item 作成したSlackBotプログラムのディレクトリに移動して以下のコマンドを実行し，Heroku上にアプリケーションを生成する．
+\begin{verbatim}
+$ heroku create <myapp_name>
+\end{verbatim}
+ただし，\verb|<myapp_name>|は任意のアプリケーション名を示す．アプリケーション名には英語のアルファベットの小文字，数字，およびハイフンのみ使用できる．
+\item 以下のコマンドを実行し，Herokuの環境変数にIncomig Webhook URLを追加する．
+\begin{verbatim}
+$ heroku config:set INCOMING_WEBHOOK_URL=<Incomig Webhook URL>
+\end{verbatim}
+ここで，\verb|<Incomig Webhook URL>|は\ref{enum:setting Incoming Webhook}項の(\ref{enum:get Webhook URL})で取得したWebhook URLに変更する．
+\item 以下のコマンドでHerokuの環境変数にアプリケーションIDを追加する．
+\begin{verbatim}
+heroku config:set YAHOO_API_KEY=<Application ID>
+\end{verbatim}
+ここで，\verb|<Application ID>|は\ref{subsec:get application ID}項の(\ref{enum:get key})で表示されたものに変更する．
+\end{enumerate}
+
+
+
+\section{使用方法}\label{sec:usage}
+本プログラムは，GitHubで管理されている．
+本プログラムのリポジトリを以下に示す．
+\begin{verbatim}
+https://github.com/matsuo0227/BootCamp.git
+\end{verbatim}
+本プログラムは，上記BootCampリポジトリ内の\verb|2019/SlackBot/MySlackBot.rb|である．
+
+
+本プログラムはHeroku上で動作するため，Herokuにデプロイして使用する．
+SlackBotプログラムを配置しているディレクトリで以下のコマンド実行する．
+\begin{verbatim}
+$ git push heroku master
+\end{verbatim}
+
+
+\section{エラー処理}\label{sec:error}
+本プログラムのエラー処理を以下に示す．
+\begin{enumerate}
+\item Yahoo! JAPAN ルビ振りAPIは，ユーザからの投稿にAPIの仕様上使用できない漢字が含まれている場合，エラーを返す．
+Yahoo! JAPAN ルビ振りAPIが上記のエラーを返した場合，以下のように投稿する．\\
+\verb|その文字は認識不可能です！|
+\end{enumerate}
+
+\section{保証しない動作}
+本プログラムの保証しない動作を以下に示す．
+\begin{enumerate}
+\item SlackのOutgoing Webhook以外からのPOSTリクエストをブロックする動作
+\end{enumerate}
+
+\bibliographystyle{ipsjunsrt}
+\bibliography{mybibdata}
+
+
+\end{document}

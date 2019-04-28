@@ -1,0 +1,94 @@
+\documentclass[12pt]{jsarticle}
+\usepackage[dvipdfmx]{graphicx}
+\textheight = 25truecm
+\textwidth = 18truecm
+\topmargin = -1.5truecm
+\oddsidemargin = -1truecm
+\evensidemargin = -1truecm
+\marginparwidth = -1truecm
+
+\def\theenumii{\Alph{enumii}}
+\def\theenumiii{\alph{enumiii}}
+\def\labelenumi{(\theenumi)}
+\def\labelenumiii{(\theenumiii)}
+\def\theenumiv{\roman{enumiv}}
+\def\labelenumiv{(\theenumiv)}
+\usepackage{comment}
+\usepackage{url}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% sty/ にある研究室独自のスタイルファイル
+\usepackage{jtygm}  % フォントに関する余計な警告を消す
+\usepackage{nutils} % insertfigure, figref, tabref マクロ
+
+
+
+\def\figdir{./figs} % 図のディレクトリ
+\def\figext{pdf}    % 図のファイルの拡張子
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 表題
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{center}
+{\LARGE SlackBotプログラムの報告書}
+\end{center}
+
+\begin{flushright}
+  2019/4/26\\
+  松尾 和樹
+\end{flushright}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 概要
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{はじめに}
+\label{sec:introduction}
+本資料は，2019 年度 B4 新人研修課題のSlackBotプログラム作成の報告書である．
+新人研修課題としてSlackBotプログラムを作成した．
+Slack\cite{slack}とは，チャットツールの一種である．
+SlackBotとは，Slackのチャンネルに投稿を行ったり，
+設定された契機となる単語によってユーザへの返信を自動で行ったりするものである．
+本資料では，課題内容，理解できなかった部分，作成できなかった機能，および自主的に作成した機能について述べる．
+
+\section{課題内容}
+課題は以下の2つを行う．
+\begin{enumerate}
+\item 任意の文字列を投稿するプログラムの作成\\
+ユーザから``（任意の文字列）と言って''という文字列を受信した際に，``（任意の文字列）''を返信するプログラムを作成する．
+\item SlackBotプログラムへの機能追加\\
+SlackBotプログラムへ機能を追加する．Slack以外のWebサービスのAPIやWebhookを利用した機能を追加する．
+たとえば，検討打合せの3日前ならば予定を投稿する機能である．
+本プログラムのコード量は，335行であった．
+\end{enumerate}
+
+\section{理解できなかった部分}
+理解できなかった部分を以下に示す．
+\begin{enumerate}
+\item nokogiriを使用した際に発生したエラー\\
+nokogiriを使用した際に，gemの依存関係によるエラーが発生した．
+nokogiriのバージョンを1.10.2から1.6にするとエラーは発生しなかった．
+nokogiriの適切なバージョンはわからなかった．
+\end{enumerate}
+
+\section{作成できなかった機能}
+作成できなかった機能を以下に示す．
+\begin{enumerate}
+\item SlackのOutgoing Webhook以外からのPOSTリクエストをブロックする機能
+\item しりとりにおいて，ユーザが投稿した単語の品詞を判定する機能
+\item 一度使用した単語を再度使用できないようにする機能
+\end{enumerate}
+
+\section{自主的に作成した機能}
+自主的に作成した機能を以下に示す．
+\begin{enumerate}
+\item コマンドにより，しりとりを開始または終了させる機能
+\item コマンドにより，しりとり中に現在の状態を表示する機能\\
+しりとりの状態とは，しりとりの途中か否かの情報とSlackBotが直前に投稿した単語の最後の文字である．
+\end{enumerate}
+
+
+\bibliographystyle{ipsjunsrt}
+\bibliography{mybibdata}
+
+
+\end{document}
